@@ -1,16 +1,37 @@
-# This is a sample Python script.
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+class Hex:
 
+    def __init__(self, q, r, s):
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
+        assert q + r + s == 0, "Invalid cube coordinates"
+        self.q = q
+        self.r = r
+        self.s = s
 
+    def cube_to_axial(self):
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+        q = self.q
+        r = self.r
+        return (q,r)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def axial_to_cube(self):
+
+        q = self.q
+        r = self.r
+        s = -self.q-self.r
+        return(q,r,s)
+
+class HexMap:
+
+    def __init__(self):
+
+        self.map={}
+
+    def set_hex (self, hex, value):
+        self.map[hex] = value
+
+    def get_hex (self, hex):
+        return self.map.get(hex,None)

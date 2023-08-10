@@ -35,3 +35,24 @@ class HexMap:
 
     def get_hex (self, hex):
         return self.map.get(hex,None)
+
+class Layout:
+    
+    def __init__(self, orientation = np.radians(30), size = 1, origin = (0,0)):
+            
+        self.orientation = orientation
+        self.size = size
+        self.origin = origin
+
+    def draw_map(self):
+        
+        fig, ax = plt.subplots()
+        hexagon = patches.RegularPolygon((0,0), numVertices=6, radius=1, orientation=np.radians(30), facecolor='none', edgecolor='black')
+        ax.add_patch(hexagon)
+        plt.savefig('hexagon.png')
+        plt.show()
+
+
+wraithsong_map = Layout()
+wraithsong_map.draw_map()
+

@@ -36,7 +36,7 @@ class HexMap:
     def get_hex (self, hex):
         return self.map.get(hex,None)
 
-class Layout:
+class MapVisualRepresentation:
     
     def __init__(self, orientation = np.radians(0), size = 2, origin = (0, 0)):
             
@@ -53,6 +53,6 @@ class Layout:
         plt.show()
 
 
-wraithsong_map = Layout()
+wraithsong_map = MapVisualRepresentation()
 wraithsong_map.draw_map()
 

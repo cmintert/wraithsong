@@ -1,0 +1,10 @@
+Here I muse on the data structure for my little project.
+
+1. Map 
+
+The map will be structured in a way that a Map Object will contain Unit, Terrain and other Objects
+and arrange those objects on a hexgrid. Spatial calculations will be done with the map object.
+
+2. Terrain
+
+The Terrain class will define the nature of the terrain, movement characteristics and other information.

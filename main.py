@@ -93,5 +93,6 @@ wraithsong_map.print_hexes()
 db.create_database()
 db.clear_database()
 db.create_gameobject_table()
-for item in wraithsong_map.get_object_list(Hex(0, 0)):
-    db.write_gameobject(item, wraithsong_map)
+for hex in wraithsong_map.map.keys():
+    for item in wraithsong_map.get_object_list(hex):
+        db.write_gameobject(item, wraithsong_map)

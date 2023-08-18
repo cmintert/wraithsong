@@ -35,9 +35,11 @@ def create_gameobject_table():
 
     sql_string = '''
         CREATE TABLE IF NOT EXISTS game_objects (
-            internal_id TEXT PRIMARY KEY UNIQUE NOT NULL,
+            Human_readable_id TEXT UNIQUE,
+            internal_id TEXT UNIQUE NOT NULL,
             name TEXT,
-            type TEXT
+            type TEXT,
+            position TEXT
         )
     '''
     c.execute(sql_string)
@@ -45,15 +47,19 @@ def create_gameobject_table():
     conn.commit()
     conn.close()
 
-def write_gameobject(object):
+def write_gameobject(object,map):
+
     conn = sqlite3.connect('wraithsong.db')
-    c = conn.cursor()
+    cursor = conn.cursor()
+
+    position_object = object.get_position(map)
+    position = f"{position_object.q}, {position_object.r}"
 
     sql_string = '''
-        INSERT INTO game_objects (internal_id, name, type)
-        VALUES (?,?,?)  
+        INSERT INTO game_objects (internal_id, name, type, position)
+        VALUES (?,?,?,?)  
     '''
-    c.execute(sql_string, (object.internal_id, object.name, object.type))
+    cursor.execute(sql_string, (object.internal_id, object.name, object.type, position))
 
     conn.commit()
     conn.close()

@@ -38,7 +38,7 @@ def create_gameobject_table():
             Human_readable_id TEXT UNIQUE,
             internal_id TEXT UNIQUE NOT NULL,
             name TEXT,
-            type TEXT,
+            object_type TEXT,
             position TEXT
         )
     '''
@@ -56,10 +56,10 @@ def write_gameobject(object,map):
     position = f"{position_object.q}, {position_object.r}"
 
     sql_string = '''
-        INSERT INTO game_objects (internal_id, name, type, position)
+        INSERT INTO game_objects (internal_id, name, object_type, position)
         VALUES (?,?,?,?)  
     '''
-    cursor.execute(sql_string, (object.internal_id, object.name, object.type, position))
+    cursor.execute(sql_string, (object.internal_id, object.name, object.object_type, position))
 
     conn.commit()
     conn.close()

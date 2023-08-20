@@ -1,0 +1,16 @@
+{
+  "terrain": {
+    "forest": {
+      "movement_cost": 2,
+      "visibility": 2
+    },
+    "plains": {
+      "movement_cost": 1,
+      "visibility": 5
+    },
+    "hills": {
+      "movement_cost": 3,
+      "visibility": 3
+    }
+  }
+}

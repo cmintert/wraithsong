@@ -4,7 +4,7 @@ import numpy as np
 
 class MapVisualRepresentation:
     
-    # In the future this will take a HexMap object as input and give a visual representation of the map
+    # In the future this will take a HexMap game_object as input and give a visual representation of the map
 
     def __init__(self, orientation = np.radians(0), size = 2, origin = (0, 0)):
             

@@ -46,7 +46,9 @@ class Terrain(GameObject):
 class Army(GameObject):
 
     def __init__(self, name):
-        super().__init__(name, object_type="army")
+        super().__init__(name, object_type="army", owner=None)
+
+    self.owner = owner
 
     def __str__(self):
         return super().__str__()

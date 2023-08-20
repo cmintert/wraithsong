@@ -101,7 +101,7 @@ class Game:
 
         self.hexmap.initialize_map(-3, 3, -2, 2)
 
-        self.hexmap.append_object(Hex(0, 0), Terrain("Eerie forrest","Forest"))
+        self.hexmap.append_object(Hex(0, 0), Terrain("Eerie forrest","forest"))
         self.hexmap.append_object(Hex(1, 0), Terrain("Black Forest","plains"))
         self.hexmap.append_object(Hex(0, 0), GameObject())
 
@@ -116,6 +116,6 @@ game.hexmap.print_content_of_all_hexes()
 db.create_database()
 db.clear_database()
 db.create_gameobject_table()
-for hex_field in game.hexmap.map.keys():
-    for item in game.hexmap.get_hex_object_list(hex_field):
+for map_hex, object_inventory in game.hexmap.map.items():
+    for item in object_inventory:
        db.write_gameobject(item, game.hexmap)

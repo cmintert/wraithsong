@@ -3,6 +3,7 @@ import uuid
 import random
 
 class ObjectIDGenerator:
+
     def __init__(self):
         self.used_counters = set()
 

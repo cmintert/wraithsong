@@ -3,7 +3,7 @@ import database as db
 
 
 from visualize_map import MapVisualRepresentation
-from gameobjects import GameObject, Terrain, Army
+from gameobjects import *
 
 
 class Hex:
@@ -99,7 +99,7 @@ class Game:
         self.name = name
         self.hexmap = HexMap()
         self.players = []
-
+        self.object_id_generator = ObjectIDGenerator()
         self.hexmap.initialize_map(-3, 3, -2, 2)
 
 

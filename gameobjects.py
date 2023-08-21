@@ -1,5 +1,22 @@
 import json
 import uuid
+import random
+
+class ObjectIDGenerator:
+    def __init__(self):
+        self.used_counters = set()
+
+    def get_random_counter(self):
+        while True:
+            counter = random.randint(0, 999_999)
+            formatted_counter = str(counter).zfill(6)
+            if formatted_counter not in self.used_counters:
+                self.used_counters.add(formatted_counter)
+                return formatted_counter
+
+    def get_unique_id(self, name, object_type):
+        random_counter = self.get_random_counter()
+        return f"{object_type}_{name}_{random_counter}"
 
 class GameObject:
 

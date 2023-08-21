@@ -1,5 +1,6 @@
-import database as db
 import json
+import database as db
+
 
 from visualize_map import MapVisualRepresentation
 from gameobjects import GameObject, Terrain, Army
@@ -9,40 +10,40 @@ class Hex:
 
     directions_axial = [(+1, -1), (+1, 0), (0, +1), (-1, +1), (-1, 0), (0, -1)]  # Clockwise from pointy-top
 
-    def __init__(self, q, r):
+    def __init__(self, q_axis, r_axis):
 
-        self.q = q
-        self.r = r
-        self.s = -q - r
+        self.q_axis = q_axis
+        self.r_axis = r_axis
+        self.s_axis = -q_axis - r_axis
 
 
 
     def __hash__(self):
 
-        return hash((self.q, self.r, self.s))
+        return hash((self.q_axis, self.r_axis, self.s_axis))
 
     def __eq__(self, other):
 
         if isinstance(other, Hex):
-            return self.q == other.q and self.r == other.r and self.s == other.s
+            return self.q_axis == other.q_axis and self.r_axis == other.r_axis and self.s_axis == other.s_axis
         return False
 
     def __str__(self):
 
-        return f"Hex with the coordinates q: {self.q}, r: {self.r}, s: {self.s}"
+        return f"Hex with the coordinates q: {self.q_axis}, r: {self.r_axis}, s: {self.s_axis}"
 
     def get_axial_coord(self):
 
-        return (self.q, self.r)
+        return (self.q_axis, self.r_axis)
 
     def get_cube_coord(self):
 
-        return (self.q, self.r, self.s)
+        return (self.q_axis, self.r_axis, self.s_axis)
 
     @classmethod
     def get_neighbour_hex(cls, hex_field, direction):
-        neighbour_hex = Hex(hex_field.q + cls.directions_axial[direction][0],
-                            hex_field.r + cls.directions_axial[direction][1])
+        neighbour_hex = Hex(hex_field.q_axis + cls.directions_axial[direction][0],
+                            hex_field.r_axis + cls.directions_axial[direction][1])
         return neighbour_hex
 
     @classmethod
@@ -58,10 +59,10 @@ class HexMap:
 
     def initialize_map(self, left, right, top, bottom):
 
-        for r in range(top, bottom + 1):
-            r_offset = int(r // 2.0)
-            for q in range(left - r_offset, right - r_offset + 1):
-                self.map.update({Hex(q, r): []})
+        for r_axis in range(top, bottom + 1):
+            r_offset = int(r_axis // 2.0)
+            for q_axis in range(left - r_offset, right - r_offset + 1):
+                self.map.update({Hex(q_axis, r_axis): []})
 
     def has_terrain(self, hex_field):
 
@@ -121,4 +122,4 @@ db.clear_database()
 db.create_gameobject_table()
 for map_hex, object_inventory in game.hexmap.map.items():
     for item in object_inventory:
-       db.write_gameobject(item, game.hexmap)
+        db.write_gameobject(item, game.hexmap)

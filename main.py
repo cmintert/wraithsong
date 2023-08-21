@@ -113,6 +113,8 @@ game.hexmap.append_object(Hex(0, -1), Army("Army 1", "Player 1"))
 
 game.hexmap.print_content_of_all_hexes()
 
+
+
 game.players.append("Player 1")
 game.players.append("Player 2")
 

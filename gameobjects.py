@@ -60,6 +60,18 @@ class Army(GameObject):
     def add_unit_to_army(self, unit):
         self.units.append(unit)
 
+    def remove_unit_from_army(self, unit):
+        self.units.remove(unit)
+
+    def move_army(self, hexmap, target_hex):
+        current_hex = self.get_position(hexmap)
+        hexmap.map[current_hex].remove(self)
+        hexmap.map[target_hex].append(self)
+
+
 class   Unit(GameObject):
+
+    def __init__(self, name, owner):
+        super().__init__(name, object_type="unit")
 
     pass

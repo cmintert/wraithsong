@@ -21,10 +21,12 @@ class ObjectIDGenerator:
 
 class GameObject:
 
-    def __init__(self, name="Not specified", object_type=None):
+    def __init__(self, name="Not specified", object_type=None, id_generator = None):
+        self.object_id = id_generator.get_unique_id(name, object_type)
         self.internal_id = str(uuid.uuid4())
         self.name = name
         self.object_type = object_type
+
 
     def __str__(self):
         return f"ID: {self.internal_id}, Name: {self.name}, Type: {self.object_type}"
@@ -43,7 +45,7 @@ class GameObject:
 class Terrain(GameObject):
 
     def __init__(self, name, terrain_type, elevation=0):
-        super().__init__(name, object_type="terrain")
+        super().__init__(name, object_type="terrain", id_generator = None)
 
         self.terrain_type = terrain_type
         self.elevation = elevation
@@ -65,7 +67,7 @@ class Terrain(GameObject):
 class Army(GameObject):
 
     def __init__(self, name, owner):
-        super().__init__(name, object_type="army")
+        super().__init__(name, object_type="army", id_generator = None)
 
         self.owner = owner
         self.units = []

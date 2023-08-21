@@ -9,8 +9,8 @@ class ObjectIDGenerator:
 
     def get_random_counter(self):
         while True:
-            counter = random.randint(0, 999_999)
-            formatted_counter = str(counter).zfill(6)
+            counter = random.randint(0, 999)
+            formatted_counter = str(counter).zfill(3)
             if formatted_counter not in self.used_counters:
                 self.used_counters.add(formatted_counter)
                 return formatted_counter

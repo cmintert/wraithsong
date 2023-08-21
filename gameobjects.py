@@ -17,11 +17,11 @@ class ObjectIDGenerator:
 
     def get_unique_id(self, name, object_type):
         random_counter = self.get_random_counter()
-        return f"{object_type}_{name}_{random_counter}"
+        return f"{object_type.upper()[0:3]}_{name}_{random_counter}"
 
 class GameObject:
 
-    def __init__(self, name="Not specified", object_type=None, id_generator = None):
+    def __init__(self, id_generator, name="Not specified", object_type=None):
         self.object_id = id_generator.get_unique_id(name, object_type)
         self.internal_id = str(uuid.uuid4())
         self.name = name
@@ -44,8 +44,8 @@ class GameObject:
 
 class Terrain(GameObject):
 
-    def __init__(self, name, terrain_type, elevation=0):
-        super().__init__(name, object_type="terrain", id_generator = None)
+    def __init__(self,id_generator, name, terrain_type, elevation=0):
+        super().__init__(id_generator, name, object_type="terrain")
 
         self.terrain_type = terrain_type
         self.elevation = elevation
@@ -66,8 +66,8 @@ class Terrain(GameObject):
 
 class Army(GameObject):
 
-    def __init__(self, name, owner):
-        super().__init__(name, object_type="army", id_generator = None)
+    def __init__(self, id_generator, name, owner):
+        super().__init__(id_generator, name, object_type="army")
 
         self.owner = owner
         self.units = []
@@ -91,7 +91,7 @@ class Army(GameObject):
 
 class   Unit(GameObject):
 
-    def __init__(self, name, owner):
-        super().__init__(name, object_type="unit")
+    def __init__(self, id_generator, name, owner):
+        super().__init__(id_generator, name, object_type="unit")
 
     pass

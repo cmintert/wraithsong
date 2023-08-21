@@ -106,7 +106,7 @@ class Game:
 
 game = Game("Wraithsong")
 
-game.hexmap.append_object(Hex(0, 0), Terrain("Eerie forrest","forest"),game.object_id_generator)
+game.hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Eerie forrest","forest"))
 
 game.hexmap.print_content_of_all_hexes()
 

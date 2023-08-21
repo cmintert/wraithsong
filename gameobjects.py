@@ -39,16 +39,27 @@ class Terrain(GameObject):
             setattr(self, key, value)
 
     def __str__(self):
-        attributes = [f"{key}: {getattr(self, key)}" for key in vars(self) if key not in ["internal_id", "name", "object_type"]]
+        attributes = [f"{key}: {getattr(self, key)}" for key in vars(self)
+                      if key not in ["internal_id", "name", "object_type"]]
         return super().__str__() + ", " + ", ".join(attributes)
 
 
 class Army(GameObject):
 
-    def __init__(self, name):
-        super().__init__(name, object_type="army", owner=None)
+    def __init__(self, name, owner):
+        super().__init__(name, object_type="army")
 
-    self.owner = owner
+        self.owner = owner
+        self.units = []
 
     def __str__(self):
-        return super().__str__()
+        attributes = [f"{key}: {getattr(self, key)}" for key in vars(self)
+                      if key not in ["internal_id", "name", "object_type"]]
+        return super().__str__() + ", " + ", ".join(attributes)
+
+    def add_unit_to_army(self, unit):
+        self.units.append(unit)
+
+class   Unit(GameObject):
+
+    pass

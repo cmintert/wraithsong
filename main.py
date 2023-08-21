@@ -101,16 +101,19 @@ class Game:
 
         self.hexmap.initialize_map(-3, 3, -2, 2)
 
-        self.hexmap.append_object(Hex(0, 0), Terrain("Eerie forrest","forest"))
-        self.hexmap.append_object(Hex(1, 0), Terrain("Black Forest","plains"))
-        self.hexmap.append_object(Hex(0, 0), GameObject())
 
-        self.players.append("Player 1")
-        self.players.append("Player 2")
 
 game = Game("Wraithsong")
 
+game.hexmap.append_object(Hex(0, 0), Terrain("Eerie forrest","forest"))
+game.hexmap.append_object(Hex(1, 0), Terrain("Black Forest","plains"))
+game.hexmap.append_object(Hex(0, 0), GameObject())
+game.hexmap.append_object(Hex(0, -1), Army("Army 1", "Player 1"))
+
 game.hexmap.print_content_of_all_hexes()
+
+game.players.append("Player 1")
+game.players.append("Player 2")
 
 
 db.create_database()

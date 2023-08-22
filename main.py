@@ -106,7 +106,11 @@ class Game:
 
 game = Game("Wraithsong")
 
-game.hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Eerie forrest","forest"))
+game.players.append("Player 1")
+game.players.append("Player 2")
+
+game.hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Dark Forest","forest"))
+game.hexmap.append_object(Hex(0, 0), Army(game.object_id_generator, "1st Dragooners",game.players[0]))
 
 game.hexmap.print_content_of_all_hexes()
 
@@ -114,6 +118,9 @@ game.hexmap.print_content_of_all_hexes()
 
 game.players.append("Player 1")
 game.players.append("Player 2")
+
+
+print (game.object_id_generator.used_counters)
 
 
 db.create_database()

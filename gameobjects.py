@@ -8,16 +8,19 @@ class ObjectIDGenerator:
         self.used_counters = set()
 
     def get_random_counter(self):
-        while True:
-            counter = random.randint(0, 999)
-            formatted_counter = str(counter).zfill(3)
-            if formatted_counter not in self.used_counters:
-                self.used_counters.add(formatted_counter)
-                return formatted_counter
+
+        counter = random.randint(0, 999)
+        formatted_counter = str(counter).zfill(3)
+        return formatted_counter
 
     def get_unique_id(self, name, object_type):
-        random_counter = self.get_random_counter()
-        return f"{object_type.upper()[0:3]}_{name}_{random_counter}"
+        while True:
+            random_counter = self.get_random_counter()
+            unique_id = f"{object_type.upper()[0:3]}_{name}_{random_counter}"
+            if unique_id not in self.used_counters:
+                self.used_counters.add(unique_id)
+                print(self.used_counters)
+                return unique_id
 
 class GameObject:
 
@@ -40,6 +43,11 @@ class GameObject:
             if self in hexmap.map[hex]:
                 return hex
         return None
+
+    def  delete(self,id_generator):
+
+        self.used_counters.remove(self.object_id)
+        del self
 
 
 class Terrain(GameObject):

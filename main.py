@@ -85,6 +85,15 @@ class HexMap:
 
         return self.map[hex_field]
 
+    def get_object_by_id(self, object_id):
+
+        for hex_field, game_objects in self.map.items():
+            for game_object in game_objects:
+                if game_object.object_id == object_id:
+                    return game_object
+        return None
+
+
     def print_content_of_all_hexes(self):
 
         for hex_field,game_objects in self.map.items():
@@ -105,27 +114,32 @@ class Game:
 
 
 game = Game("Wraithsong")
+hexmap = game.hexmap
+players = game.players
 
-game.players.append("Player 1")
-game.players.append("Player 2")
+players.append("Player 1")
+players.append("Player 2")
 
-game.hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Dark Forest","forest"))
-game.hexmap.append_object(Hex(0, 0), Army(game.object_id_generator, "1st Dragooners",game.players[0]))
+hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Dark Forest","forest"))
+hexmap.append_object(Hex(0, 0), Army(game.object_id_generator, "1st Dragooners",game.players[0]))
 
-game.hexmap.print_content_of_all_hexes()
+hexmap.print_content_of_all_hexes()
 
 
 
-game.players.append("Player 1")
-game.players.append("Player 2")
+players.append("Player 1")
+players.append("Player 2")
 
 
 print (game.object_id_generator.used_counters)
 
+counter = input()
+
+print(hexmap.get_object_by_id(counter))
 
 db.create_database()
 db.clear_database()
 db.create_gameobject_table()
-for map_hex, object_inventory in game.hexmap.map.items():
+for map_hex, object_inventory in hexmap.map.items():
     for item in object_inventory:
-        db.write_gameobject(item, game.hexmap)
+        db.write_gameobject(item, hexmap)

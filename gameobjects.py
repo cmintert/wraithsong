@@ -39,9 +39,9 @@ class GameObject:
 
     def get_position(self,hexmap):
 
-        for hex in hexmap.map.keys():
-            if self in hexmap.map[hex]:
-                return hex
+        for hex_field in hexmap.map.keys():
+            if self in hexmap.map[hex_field]:
+                return hex_field
         return None
 
     def  delete(self,id_generator):

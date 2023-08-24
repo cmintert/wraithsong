@@ -1,8 +1,9 @@
 import json
+import math
 import database as db
 
 
-from visualize_map import MapVisualRepresentation
+from visualize_map import *
 from gameobjects import *
 
 
@@ -32,13 +33,19 @@ class Hex:
 
         return f"Hex with the coordinates q: {self.q_axis}, r: {self.r_axis}, s: {self.s_axis}"
 
-    def get_axial_coord(self):
+    def get_axial_coordinates(self):
 
         return (self.q_axis, self.r_axis)
 
-    def get_cube_coord(self):
+    def get_cube_coordinates(self):
 
         return (self.q_axis, self.r_axis, self.s_axis)
+
+    def get_pixel_coordinates(self, size):
+
+        x_axis = size * (3**0.5) * (self.q_axis + self.r_axis / 2)
+        y_axis = size * 1.5 * self.r_axis
+        return (x_axis, y_axis)
 
     @classmethod
     def get_neighbour_hex(cls, hex_field, direction):
@@ -133,9 +140,15 @@ players.append("Player 2")
 
 print (game.object_id_generator.used_counters)
 
-counter = input()
+app = QApplication(sys.argv)
 
-print(hexmap.get_object_by_id(counter))
+window = HexMapApp(hexmap)
+window.show()
+
+sys.exit(app.exec())
+
+
+
 
 db.create_database()
 db.clear_database()

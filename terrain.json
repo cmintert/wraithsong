@@ -1,14 +1,17 @@
 {
   "terrain": {
     "forest": {
+      "texture": "forest.png",
       "movement_cost": 2,
       "visibility": 2
     },
     "plains": {
+      "texture": "plains.png",
       "movement_cost": 1,
       "visibility": 5
     },
     "hills": {
+      "texture": "hills.png",
       "movement_cost": 3,
       "visibility": 3
     }

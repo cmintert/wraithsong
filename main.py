@@ -1,7 +1,7 @@
 import json
 import math
 import database as db
-
+import random
 
 from visualize_map import *
 from gameobjects import *
@@ -108,6 +108,12 @@ class HexMap:
             for game_object in game_objects:
                 print(game_object)
 
+    def fill_map_with_terrain(self):
+
+        for hex_field in self.map.keys():
+            choice = random.choice(["plain", "mountain", "forest"])
+            self.append_object(hex_field, Terrain(game.object_id_generator,"Generated_Terrain", choice))
+
 class Game:
 
     def __init__(self, name):
@@ -116,7 +122,7 @@ class Game:
         self.hexmap = HexMap()
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
-        self.hexmap.initialize_map(-2, 2, -2, 2)
+        self.hexmap.initialize_map(-5, 5, -5, 5)
 
 
 
@@ -127,8 +133,9 @@ players = game.players
 players.append("Player 1")
 players.append("Player 2")
 
-hexmap.append_object(Hex(0, 0), Terrain(game.object_id_generator, "Dark Forest","forest"))
-hexmap.append_object(Hex(0, 0), Army(game.object_id_generator, "1st Dragooners",game.players[0]))
+hexmap.fill_map_with_terrain()
+
+
 
 hexmap.print_content_of_all_hexes()
 

@@ -9,8 +9,8 @@ class ObjectIDGenerator:
 
     def get_random_counter(self):
 
-        counter = random.randint(0, 999)
-        formatted_counter = str(counter).zfill(3)
+        counter = random.randint(0, 9999)
+        formatted_counter = str(counter).zfill(4)
         return formatted_counter
 
     def get_unique_id(self, name, object_type):
@@ -19,7 +19,6 @@ class ObjectIDGenerator:
             unique_id = f"{object_type.upper()[0:3]}_{name}_{random_counter}"
             if unique_id not in self.used_counters:
                 self.used_counters.add(unique_id)
-                print(self.used_counters)
                 return unique_id
 
 class GameObject:
@@ -61,6 +60,7 @@ class Terrain(GameObject):
         with open("terrain.json", "r") as file:
             terrain_data = json.load(file)
 
+        #get all the attributes listed under "terrain" in the json file
         attributes = terrain_data["terrain"].get(terrain_type, {})
 
         for key, value in attributes.items():
@@ -101,5 +101,3 @@ class   Unit(GameObject):
 
     def __init__(self, id_generator, name, owner):
         super().__init__(id_generator, name, object_type="unit")
-
-    pass

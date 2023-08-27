@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QPen, QPainterPath, QPixmap
+from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
 import math
 import sys
+import gameobjects
 
 class HexMapVisualization(QGraphicsView):
     def __init__(self, hex_map):
@@ -36,17 +37,18 @@ class HexMapVisualization(QGraphicsView):
             hex_path.lineTo(*corner)
         hex_path.closeSubpath()
 
-        self.add_graphic_to_hex( hex, size, "forest.png")
 
-        pen = QPen(Qt.lightGray)
-        pen.setWidth(3)
 
-        pen2 = QPen(Qt.black)
-        pen2.setWidth(1)
+        pen = QPen(QColor("#2b362b"))
+        pen.setWidth(5)
+
+
 
         self.scene.addPath(hex_path, pen=pen)
-        self.scene.addPath(hex_path, pen=pen2)
 
+        for game_object in self.hex_map.get_hex_object_list(hex):
+            if isinstance(game_object, gameobjects.Terrain):
+                self.add_graphic_to_hex(hex, size, game_object.texture)
 
         # Add coordinate labels
 
@@ -61,7 +63,7 @@ class HexMapVisualization(QGraphicsView):
 
         # Create a scaled QPixmap object
 
-        scale_factor = 2.35
+        scale_factor = 2.33
         pixmap = QPixmap(f"assets/{asset}")
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)

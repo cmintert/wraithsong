@@ -14,6 +14,11 @@
       "texture": "mountain.png",
       "movement_cost": 3,
       "visibility": 3
+    },
+    "water": {
+      "texture": "water.png",
+      "movement_cost": 0,
+      "visibility": 0
     }
   }
 }

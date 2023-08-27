@@ -122,7 +122,7 @@ class Game:
         self.hexmap = HexMap()
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
-        self.hexmap.initialize_map(-5, 5, -5, 5)
+        self.hexmap.initialize_map(-2, 2, -2, 2)
 
 
 

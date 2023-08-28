@@ -14,9 +14,9 @@ class HexMapVisualization(QGraphicsView):
         self.edge_map = edge_map
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
-        self.init_map()
+        self.draw_map()
 
-    def init_map(self):
+    def draw_map(self):
 
         size = 80
         for hex_field,game_objects in self.hex_map.hex_map.items():

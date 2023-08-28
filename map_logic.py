@@ -37,6 +37,8 @@ class Hex:
         self.r_axis = r_axis
         self.s_axis = -q_axis - r_axis
 
+
+
     def __hash__(self):
 
         return hash((self.q_axis, self.r_axis, self.s_axis))
@@ -92,8 +94,8 @@ class Hex:
 
 
     # ordered_hex_pair is used for keeping direction of Edge objects consistent
-
-    def ordered_hex_pair(self,hex1, hex2):
+    @staticmethod
+    def ordered_hex_pair(hex1, hex2):
         if hex1.q_axis < hex2.q_axis or (hex1.q_axis == hex2.q_axis and hex1.r_axis < hex2.r_axis):
             return (hex1, hex2)
         return (hex2, hex1)

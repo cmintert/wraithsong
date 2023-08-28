@@ -15,7 +15,7 @@ class HexMapVisualization(QGraphicsView):
 
     def init_map(self):
 
-        for hex_field,game_objects in self.hex_map.map.items():
+        for hex_field,game_objects in self.hex_map.hex_map.items():
             self.draw_hex(hex_field, 80)
 
 

@@ -38,8 +38,8 @@ class GameObject:
 
     def get_position(self,hexmap):
 
-        for hex_field in hexmap.map.keys():
-            if self in hexmap.map[hex_field]:
+        for hex_field in hexmap.hex_map.keys():
+            if self in hexmap.hex_map[hex_field]:
                 return hex_field
         return None
 
@@ -93,8 +93,8 @@ class Army(GameObject):
 
     def move_army(self, hexmap, target_hex):
         current_hex = self.get_position(hexmap)
-        hexmap.map[current_hex].remove(self)
-        hexmap.map[target_hex].append(self)
+        hexmap.hex_map[current_hex].remove(self)
+        hexmap.hex_map[target_hex].append(self)
 
 
 class   Unit(GameObject):

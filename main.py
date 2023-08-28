@@ -8,7 +8,31 @@ from gameobjects import *
 
 
 class Hex:
+    """
+        A representation of a hexagon in a hexagonal grid system.
 
+        Attributes:
+        - directions_axial: A list of axial directions representing neighboring hexagons in a clockwise order.
+        - q_axis: The horizontal coordinate in a hexagonal grid.
+        - r_axis: The vertical coordinate in a hexagonal grid.
+        - s_axis: Calculated coordinate to ensure q + r + s = 0 in a hexagonal grid.
+
+        Methods:
+        - __init__(q_axis, r_axis): Initializes a Hex object using q and r axial coordinates.
+        - __hash__(): Returns a unique hash representation of the hexagon.
+        - __eq__(other): Checks if this hexagon is equivalent to another hexagon.
+        - __str__(): Returns a string representation of the hexagon.
+        - get_axial_coordinates(): Returns the axial (q, r) coordinates of the hexagon.
+        - get_cube_coordinates(): Returns the cube (q, r, s) coordinates of the hexagon.
+        - get_pixel_coordinates(size): Converts the axial coordinates to pixel (x, y)
+            coordinates based on the given hex size (Outer radius in pixels).
+        - get_edge_by_direction(direction): Returns the edge object of the hexagon corresponding to the given direction.
+        - ordered_hex_pair(hex1, hex2): Returns a tuple of two hexagons in a consistent order.
+        - get_neighbour_hex(hex_field, direction): Returns the neighboring hexagon in the specified direction.
+        - hex_obj_from_string(string): Creates a Hex object from a string representation of its axial coordinates.
+
+        Note: The hexagonal grid is based on the axial coordinate system, and it follows a pointy-top orientation.
+    """
     directions_axial = [(+1, -1), (+1, 0), (0, +1), (-1, +1), (-1, 0), (0, -1)]  # Clockwise from pointy-top
 
     def __init__(self, q_axis, r_axis):
@@ -47,6 +71,29 @@ class Hex:
         y_axis = size * 1.5 * self.r_axis
         return (x_axis, y_axis)
 
+    def get_cornerpixel_coordinates(self, size, x_axis, y_axis):
+
+        # Calculate the pixel corner points for the hex
+        corners = []
+        for corner_number in range(6):
+            angle_deg = 60 * corner_number - 30
+            angle_rad = math.pi / 180 * angle_deg
+            corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
+        return corners
+
+    def get_edge_by_direction(self,direction):
+
+        if direction < 0 or direction > 5:
+            raise ValueError("Direction must be between 0 and 5")
+
+        #as the the edges are generated in order we need to keep that order
+
+        neighbour_hex = Hex.get_neighbour_hex(self, direction)
+        ordered_hex_pair = Hex.ordered_hex_pair(self, neighbour_hex)
+
+        return Edge(ordered_hex_pair[0], ordered_hex_pair[1])
+
+
     # ordered_hex_pair is used for keeping direction of Edge objects consistent
 
     def ordered_hex_pair(hex1, hex2):
@@ -82,7 +129,10 @@ class Edge:
         return f"Edge between {self.hex_field_1} and {self.hex_field_2}"
 
     def get_hex_fields(self):
+
         return (self.hex_field_1, self.hex_field_2)
+
+
 
 class HexMap:
 
@@ -104,7 +154,7 @@ class HexMap:
                 return True
         return False
 
-    def append_object(self, hex_field, game_object):
+    def append_object_to_hex(self, hex_field, game_object):
 
         if isinstance(game_object, Terrain) and self.has_terrain(hex_field):
             raise ValueError("There is already a terrain game_object in this hex_field")
@@ -138,7 +188,7 @@ class HexMap:
 
         for hex_field in self.hex_map.keys():
             choice = random.choice(["plain", "mountain", "forest", "water"])
-            self.append_object(hex_field, Terrain(game.object_id_generator,"Generated_Terrain", choice))
+            self.append_object_to_hex(hex_field, Terrain(game.object_id_generator, "Generated_Terrain", choice))
 
 class EdgeMap:
 
@@ -154,12 +204,30 @@ class EdgeMap:
                 if Edge(hex_field, neighbour_hex) not in self.edge_map.keys():
                     self.edge_map.update({Edge(hex_field, neighbour_hex): []})
 
-    def print_edge_map(self):
+    def append_object_to_edge(self, edge, game_object):
 
-        print(len(self.edge_map))
-        for edge in self.edge_map.keys():
+        if isinstance(game_object, Terrain) and self.has_terrain(edge):
+            raise ValueError("There is already a terrain game_object in this hex_field")
+
+        if edge in self.edge_map:
+            self.edge_map[edge].append(game_object)
+        else:
+            self.edge_map[edge] = [game_object]
+
+    def has_terrain(self, edge):
+
+        for game_object in self.edge_map[edge]:
+            if isinstance(game_object, Terrain):
+                return True
+        return False
+
+    def print_content_of_all_edges(self):
+
+        for edge, game_objects in self.edge_map.items():
             print(edge)
-            print(self.edge_map[edge])
+            for game_object in game_objects:
+                print(game_object)
+        print(f"There are {len(self.edge_map)} edges in the edge map")
 
 
 class Game:
@@ -171,7 +239,7 @@ class Game:
         self.edgemap = EdgeMap()
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
-        self.hexmap.initialize_hex_map(-1, 1, -1, 1)
+        self.hexmap.initialize_hex_map(-3, 3, -3, 3)
 
 
 
@@ -181,7 +249,8 @@ edgemap = game.edgemap
 players = game.players
 
 edgemap.initialize_edge_map(hexmap.hex_map)
-edgemap.print_edge_map()
+
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 
 players.append("Player 1")
 players.append("Player 2")
@@ -190,7 +259,7 @@ hexmap.fill_map_with_terrain()
 
 
 hexmap.print_content_of_all_hexes()
-
+edgemap.print_content_of_all_edges()
 
 print (game.object_id_generator.used_counters)
 

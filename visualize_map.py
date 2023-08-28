@@ -15,11 +15,19 @@ class HexMapVisualization(QGraphicsView):
 
     def init_map(self):
 
+        size = 80
         for hex_field,game_objects in self.hex_map.hex_map.items():
-            self.draw_hex(hex_field, 80)
+            self.draw_hex_terrain(hex_field, size)
+
+        for edge,game_objects in self.hex_map.edge_map.items():
+            self.draw_edge_terrain(edge, size)
+
+    def draw_edge_terrain(self, edge, size):
+
+        pass
 
 
-    def draw_hex(self, hex, size):
+    def draw_hex_terrain(self, hex, size):
 
         # Hex center coordinates
 
@@ -27,7 +35,7 @@ class HexMapVisualization(QGraphicsView):
 
         # Define hex corners
 
-        corners = [self.hex_corner(size, corner_number, hex_x_coordinates, hex_y_coordinates) for corner_number in range(6)]
+        corners = hex.get_cornerpixel_coordinates(size, hex_x_coordinates, hex_y_coordinates)
 
         # Create a path for the hex shape
 
@@ -85,13 +93,7 @@ class HexMapVisualization(QGraphicsView):
 
         self.scene.addItem(pixmap_item)
 
-    def hex_corner(self, size, corner_number, x_axis, y_axis):
 
-        # Calculate the corner points for the hex
-
-        angle_deg = 60 * corner_number - 30
-        angle_rad = math.pi / 180 * angle_deg
-        return (x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad))
 
 class HexMapApp(QMainWindow):
 

@@ -19,6 +19,12 @@
       "texture": "water.png",
       "movement_cost": 0,
       "visibility": 0
+    },
+    "river": {
+      "texture": "river.png",
+      "movement_cost": 0,
+      "origin": 0,
+      "edgeobject" : "True"
     }
   }
 }

@@ -4,11 +4,14 @@ from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
 import math
 import sys
 import gameobjects
+from map_logic import Hex
+
 
 class HexMapVisualization(QGraphicsView):
-    def __init__(self, hex_map):
+    def __init__(self, hex_map, edge_map):
         super().__init__()
         self.hex_map = hex_map
+        self.edge_map = edge_map
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.init_map()
@@ -19,23 +22,32 @@ class HexMapVisualization(QGraphicsView):
         for hex_field,game_objects in self.hex_map.hex_map.items():
             self.draw_hex_terrain(hex_field, size)
 
-        for edge,game_objects in self.hex_map.edge_map.items():
-            self.draw_edge_terrain(edge, size)
+        for edge,game_objects in self.edge_map.edge_map.items():
+            #check if the game object is a river and a terrain
+            for game_object in game_objects:
+                if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":
+                    self.draw_edge_terrain(edge, size)
 
     def draw_edge_terrain(self, edge, size):
 
-        pass
+        source_hex = edge.spawn_hex
+        corners = source_hex.get_cornerpixel_coordinates(size)
+
+        edge_path = QPainterPath()
+        edge_path.moveTo(*corners[edge.spawn_direction])
+        edge_path.lineTo(*corners[(edge.spawn_direction+1)%6])
+
+        pen = QPen(QColor("#0000FF"))
+        pen.setWidth(10)
+
+        self.scene.addPath(edge_path, pen=pen)
 
 
     def draw_hex_terrain(self, hex, size):
 
-        # Hex center coordinates
-
-        hex_x_coordinates,hex_y_coordinates = hex.get_pixel_coordinates(size)
-
         # Define hex corners
 
-        corners = hex.get_cornerpixel_coordinates(size, hex_x_coordinates, hex_y_coordinates)
+        corners = hex.get_cornerpixel_coordinates(size)
 
         # Create a path for the hex shape
 
@@ -45,12 +57,8 @@ class HexMapVisualization(QGraphicsView):
             hex_path.lineTo(*corner)
         hex_path.closeSubpath()
 
-
-
         pen = QPen(QColor("#2b362b"))
         pen.setWidth(5)
-
-
 
         self.scene.addPath(hex_path, pen=pen)
 
@@ -59,6 +67,7 @@ class HexMapVisualization(QGraphicsView):
                 self.add_graphic_to_hex(hex, size, game_object.texture)
 
         # Add coordinate labels
+        hex_x_coordinates, hex_y_coordinates = hex.get_pixel_coordinates(size)
 
         label = QGraphicsTextItem(f"({hex.q_axis}, {hex.r_axis})")
         label.setPos(hex_x_coordinates - label.boundingRect().width() / 2,
@@ -97,8 +106,8 @@ class HexMapVisualization(QGraphicsView):
 
 class HexMapApp(QMainWindow):
 
-    def __init__(self, hex_map):
+    def __init__(self, hex_map, edge_map):
         super().__init__()
-        self.visualization = HexMapVisualization(hex_map)
+        self.visualization = HexMapVisualization(hex_map, edge_map)
         self.setCentralWidget(self.visualization)
         self.setWindowTitle("Hex Map Visualization")

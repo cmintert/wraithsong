@@ -1,0 +1,4 @@
+# Ignore the following directories
+.idea/
+.venv/
+.vs/

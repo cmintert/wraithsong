@@ -4,31 +4,7 @@ import random
 from gameobjects import Terrain
 
 class Hex:
-    """
-        A representation of a hexagon in a hexagonal grid system.
 
-        Attributes:
-        - directions_axial: A list of axial directions representing neighboring hexagons in a clockwise order.
-        - q_axis: The horizontal coordinate in a hexagonal grid.
-        - r_axis: The vertical coordinate in a hexagonal grid.
-        - s_axis: Calculated coordinate to ensure q + r + s = 0 in a hexagonal grid.
-
-        Methods:
-        - __init__(q_axis, r_axis): Initializes a Hex object using q and r axial coordinates.
-        - __hash__(): Returns a unique hash representation of the hexagon.
-        - __eq__(other): Checks if this hexagon is equivalent to another hexagon.
-        - __str__(): Returns a string representation of the hexagon.
-        - get_axial_coordinates(): Returns the axial (q, r) coordinates of the hexagon.
-        - get_cube_coordinates(): Returns the cube (q, r, s) coordinates of the hexagon.
-        - get_pixel_coordinates(size): Converts the axial coordinates to pixel (x, y)
-            coordinates based on the given hex size (Outer radius in pixels).
-        - get_edge_by_direction(direction): Returns the edge object of the hexagon corresponding to the given direction.
-        - ordered_hex_pair(hex1, hex2): Returns a tuple of two hexagons in a consistent order.
-        - get_neighbour_hex(hex_field, direction): Returns the neighboring hexagon in the specified direction.
-        - hex_obj_from_string(string): Creates a Hex object from a string representation of its axial coordinates.
-
-        Note: The hexagonal grid is based on the axial coordinate system, and it follows a pointy-top orientation.
-    """
     directions_axial = [(+1, -1), (+1, 0), (0, +1), (-1, +1), (-1, 0), (0, -1)]  # Clockwise from pointy-top
 
     def __init__(self, q_axis, r_axis):
@@ -74,8 +50,8 @@ class Hex:
         # Calculate the pixel corner points for the hex
         corners = []
         for corner_number in range(6):
-            angle_deg = 60 * corner_number -30
-            angle_rad = math.pi / 180 * angle_deg
+            angle_deg = (60 * corner_number - 90) % 360
+            angle_rad = math.pi / 180 * angle_deg  
             corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
         return corners
 

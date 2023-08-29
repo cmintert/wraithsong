@@ -19,6 +19,7 @@ class HexMapVisualization(QGraphicsView):
     def draw_map(self):
 
         size = 80
+
         for hex_field,game_objects in self.hex_map.hex_map.items():
             self.draw_hex_terrain(hex_field, size)
 
@@ -34,14 +35,18 @@ class HexMapVisualization(QGraphicsView):
         corners = source_hex.get_cornerpixel_coordinates(size)
 
         edge_path = QPainterPath()
-        edge_path.moveTo(*corners[edge.spawn_direction])
-        edge_path.lineTo(*corners[(edge.spawn_direction+1)%6])
+        edge_path.moveTo(*corners[edge.spawn_direction - 1])  # todo: look at this suspicious behavior
+        edge_path.lineTo(*corners[(edge.spawn_direction)])
 
         pen = QPen(QColor("#0000FF"))
         pen.setWidth(10)
 
         self.scene.addPath(edge_path, pen=pen)
 
+        print(f"Drawing river at {edge}")
+        print(f"Spawn Hex: {edge.spawn_hex}")
+        print(f"Spawn Direction: {edge.spawn_direction}")
+        print(f"Corners: {corners}")
 
     def draw_hex_terrain(self, hex, size):
 

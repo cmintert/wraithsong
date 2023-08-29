@@ -74,7 +74,7 @@ class Hex:
         # Calculate the pixel corner points for the hex
         corners = []
         for corner_number in range(6):
-            angle_deg = 60 * corner_number - 30
+            angle_deg = 60 * corner_number -30
             angle_rad = math.pi / 180 * angle_deg
             corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
         return corners

@@ -28,28 +28,21 @@ class HexMapVisualization(QGraphicsView):
             for game_object in game_objects:
                 if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":
                     self.draw_edge_terrain(edge, size)
+                    self.add_graphic_to_edge(edge, size, "river.png")
 
     def draw_edge_terrain(self, edge, size):
 
-        source_hex = edge.spawn_hex
-        corners = source_hex.get_cornerpixel_coordinates(size)
-
-        edge_path = QPainterPath()
-        edge_path.moveTo(*corners[edge.spawn_direction])  # todo: look at this suspicious behavior
-        edge_path.lineTo(*corners[(edge.spawn_direction + 1)%6])
-
-        pen = QPen(QColor("#0000FF"))
-        pen.setWidth(10)
-
-        self.scene.addPath(edge_path, pen=pen)
-
-        print(f"Drawing river at {edge}")
-        print(f"Spawn Hex: {edge.spawn_hex}")
-        print(f"Spawn Direction: {edge.spawn_direction}")
-        print(f"Size: {size}")
-        print(f"Corners: {corners}")
-        print(f"Hex Coordiantes: {source_hex.get_pixel_coordinates(size)}")
-        print(f"Corners Edge: {corners[edge.spawn_direction]}")
+       source_hex = edge.spawn_hex
+       corners = source_hex.get_cornerpixel_coordinates(size)
+       
+       edge_path = QPainterPath()
+       edge_path.moveTo(*corners[edge.spawn_direction])  # todo: look at this suspicious behavior
+       edge_path.lineTo(*corners[(edge.spawn_direction + 1)%6])
+       
+       pen = QPen(QColor("#0000FF"))
+       pen.setWidth(10)
+       
+       #self.scene.addPath(edge_path, pen=pen)
 
     def draw_hex_terrain(self, hex, size):
 
@@ -82,7 +75,7 @@ class HexMapVisualization(QGraphicsView):
                      hex_y_coordinates - label.boundingRect().height()/2)
         self.scene.addItem(label)
 
-    def add_graphic_to_hex(self, hex_field, size, asset="forest.png"):
+    def add_graphic_to_hex(self, hex_field, size, asset="missing.png"):
 
         x_axis, y_axis = hex_field.get_pixel_coordinates(size)
 
@@ -107,6 +100,31 @@ class HexMapVisualization(QGraphicsView):
         pixmap_item.setPos(graphic_x_center, graphic_y_center)
 
         # Draw the hex
+
+        self.scene.addItem(pixmap_item)
+
+    def add_graphic_to_edge(self, edge, size, asset="missing.png"):
+        
+        rotation_matrix = (-60,0,60,-60,0,60)
+
+        source_hex = edge.spawn_hex
+        edge_center_coordinates = source_hex.get_edgecenter_pixel_coordinates(size)
+
+        x_axis, y_axis = edge_center_coordinates[edge.spawn_direction][0], edge_center_coordinates[edge.spawn_direction][1]
+
+        scale_factor = 1.2
+        pixmap = QPixmap(f"assets/{asset}")
+        scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
+                                     Qt.SmoothTransformation)
+
+        pixmap_item = QGraphicsPixmapItem(scale_pixmap)
+        pixmap_item.setOffset(-pixmap_item.boundingRect().width() / 2, -pixmap_item.boundingRect().height() / 2)
+
+        graphic_x_center = x_axis
+        graphic_y_center = y_axis
+
+        pixmap_item.setRotation(rotation_matrix[edge.spawn_direction])
+        pixmap_item.setPos(graphic_x_center, graphic_y_center)
 
         self.scene.addItem(pixmap_item)
 

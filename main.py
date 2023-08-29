@@ -25,8 +25,10 @@ players = game.players
 edgemap.initialize_edge_map(hexmap.hex_map)
 
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
-
-#edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(2), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(3), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(4), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 
 players.append("Player 1")
 players.append("Player 2")
@@ -46,12 +48,9 @@ window.show()
 
 sys.exit(app.exec())
 
-
-
-
-#db.create_database()
-#db.clear_database()
-#db.create_gameobject_table()
-#for map_hex, object_inventory in hexmap.hex_map.items():
-#    for item in object_inventory:
-#        db.write_gameobject(item, hexmap)
+db.create_database()
+db.clear_database()
+db.create_gameobject_table()
+for map_hex, object_inventory in hexmap.hex_map.items():
+    for item in object_inventory:
+        db.write_gameobject(item, hexmap)

@@ -55,6 +55,19 @@ class Hex:
             corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
         return corners
 
+    def get_edgecenter_pixel_coordinates(self, size):
+    
+        corners = self.get_cornerpixel_coordinates(size)
+        edge_centers = []
+
+        # Calculate the coordinates of the edge centers
+        for i in range(len(corners)):
+            x1, y1 = corners[i]
+            x2, y2 = corners[(i + 1) % 6]  # Loop back to the first corner after the last one
+            edge_centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
+        return edge_centers
+
+
     def get_edge_by_direction(self,direction):
 
         if direction < 0 or direction > 5:

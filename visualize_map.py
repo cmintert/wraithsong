@@ -6,6 +6,13 @@ import sys
 import gameobjects
 from map_logic import Hex
 
+PEN_COLOR_HOVER = "#979068"
+PEN_COLOR_DEFAULT = "#2b362b"
+RIVER_COLOR = "#0000FF"
+RIVER_WIDTH = 10
+SCALE_FACTOR_HEX = 2.33
+SCALE_FACTOR_EDGE = 1.2
+EDGE_OFFSET = 0.5
 class SignalEmitter(QObject):
     hex_hovered = Signal(int, int)
 
@@ -25,7 +32,7 @@ class HoverableHexagon(QGraphicsPathItem):
         self.emitter.hex_hovered.emit (q, r) # Emit the signal to the parent widget
         print(f"Hovering over hex {q},{r}")
 
-        pen = QPen(QColor("#979068"))
+        pen = QPen(QColor(PEN_COLOR_HOVER))
         pen.setWidth(5)
 
         self.setPen(pen)
@@ -33,7 +40,7 @@ class HoverableHexagon(QGraphicsPathItem):
 
     def hoverLeaveEvent(self, event):
         # Reset the pen color or style when the mouse leaves the hexagon
-        pen = QPen(QColor("#2b362b"))  # Original color
+        pen = QPen(QColor(PEN_COLOR_DEFAULT))  # Original color
         pen.setWidth(5)
         self.setPen(pen)
         self.setZValue(0)
@@ -50,31 +57,16 @@ class HexMapVisualization(QGraphicsView):
 
     def draw_map(self):
 
-        size = 80
+        hex_size = 80
 
         for hex_field,game_objects in self.hex_map.hex_map.items():
-            self.draw_hex_terrain(hex_field, size)
+            self.draw_hex_terrain(hex_field, hex_size)
 
         for edge,game_objects in self.edge_map.edge_map.items():
             #check if the game object is a river and a terrain
             for game_object in game_objects:
-                if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":
-                    self.draw_edge_terrain(edge, size)
-                    self.add_graphic_to_edge(edge, size, "river.png")
-
-    def draw_edge_terrain(self, edge, size):
-
-       source_hex = edge.spawn_hex
-       corners = source_hex.get_cornerpixel_coordinates(size)
-       
-       edge_path = QPainterPath()
-       edge_path.moveTo(*corners[edge.spawn_direction])
-       edge_path.lineTo(*corners[(edge.spawn_direction + 1)%6])
-       
-       pen = QPen(QColor("#0000FF"))
-       pen.setWidth(10)
-       
-       #self.scene.addPath(edge_path, pen=pen)
+                if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":  
+                    self.add_graphic_to_edge(edge, hex_size, "river.png")
 
     def draw_hex_terrain(self, hex, size):
 

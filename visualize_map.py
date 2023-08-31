@@ -131,12 +131,13 @@ class HexMapVisualization(QGraphicsView):
         
         rotation_matrix = (-60,0,60,-60,0,60)
 
-        source_hex = edge.spawn_hex
+        source_hex = edge.spawn_hex   
         edge_center_coordinates = source_hex.get_edgecenter_pixel_coordinates(size)
 
         x_axis, y_axis = edge_center_coordinates[edge.spawn_direction][0], edge_center_coordinates[edge.spawn_direction][1]
 
         scale_factor = 1.2    # This is the scale factor for the texture to fit the hex edge
+        
         pixmap = QPixmap(f"assets/{asset}")
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)

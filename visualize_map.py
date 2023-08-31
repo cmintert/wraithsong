@@ -8,11 +8,7 @@ from map_logic import Hex
 
 PEN_COLOR_HOVER = "#979068"
 PEN_COLOR_DEFAULT = "#2b362b"
-RIVER_COLOR = "#0000FF"
-RIVER_WIDTH = 10
-SCALE_FACTOR_HEX = 2.33
-SCALE_FACTOR_EDGE = 1.2
-EDGE_OFFSET = 0.5
+
 class SignalEmitter(QObject):
     hex_hovered = Signal(int, int)
 
@@ -108,7 +104,8 @@ class HexMapVisualization(QGraphicsView):
 
         # Create a scaled QPixmap object
 
-        scale_factor = 2.33
+        scale_factor = 2.33 # This is the scale factor for the hexagon to fit drawn path
+
         pixmap = QPixmap(f"assets/{asset}")
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)
@@ -139,7 +136,7 @@ class HexMapVisualization(QGraphicsView):
 
         x_axis, y_axis = edge_center_coordinates[edge.spawn_direction][0], edge_center_coordinates[edge.spawn_direction][1]
 
-        scale_factor = 1.2
+        scale_factor = 1.2    # This is the scale factor for the texture to fit the hex edge
         pixmap = QPixmap(f"assets/{asset}")
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)

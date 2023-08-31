@@ -39,8 +39,9 @@ class HoverableHexagon(QGraphicsPathItem):
         self.setZValue(0)
 
 class HexMapVisualization(QGraphicsView):
-    def __init__(self, hex_map, edge_map):
+    def __init__(self, hex_map, edge_map, parent_app=None):
         super().__init__()
+        self.parent_app = parent_app
         self.hex_map = hex_map
         self.edge_map = edge_map
         self.scene = QGraphicsScene(self)
@@ -67,7 +68,7 @@ class HexMapVisualization(QGraphicsView):
        corners = source_hex.get_cornerpixel_coordinates(size)
        
        edge_path = QPainterPath()
-       edge_path.moveTo(*corners[edge.spawn_direction])  # todo: look at this suspicious behavior
+       edge_path.moveTo(*corners[edge.spawn_direction])
        edge_path.lineTo(*corners[(edge.spawn_direction + 1)%6])
        
        pen = QPen(QColor("#0000FF"))
@@ -93,7 +94,7 @@ class HexMapVisualization(QGraphicsView):
         pen.setWidth(5)
 
         hoverable_hex = HoverableHexagon(hex_path, hex)
-
+        hoverable_hex.emitter.hex_hovered.connect(self.update_info_label)
         hoverable_hex.setPen(pen)
         self.scene.addItem(hoverable_hex)
 
@@ -162,13 +163,15 @@ class HexMapVisualization(QGraphicsView):
 
         self.scene.addItem(pixmap_item)
 
+    def update_info_label(self, q, r):
+        self.parent_app.hex_info_label.setText(f"Hex Info: {q},{r}")
 
 
 class HexMapApp(QMainWindow):
 
     def __init__(self, hex_map, edge_map):
         super().__init__()
-        self.visualization = HexMapVisualization(hex_map, edge_map)
+        self.visualization = HexMapVisualization(hex_map, edge_map, self)
         
         # Create the new widget
         self.hex_info_widget = QWidget()
@@ -195,5 +198,4 @@ class HexMapApp(QMainWindow):
         self.setWindowTitle("Hex Map Visualization")
 
         
-        def handle_hex_hovered(q, r):
-            self.hex_info_label.setText(f"Hex Info: {q},{r}")
+        

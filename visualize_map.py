@@ -1,22 +1,28 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem, QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from PySide6.QtCore import Qt, QSize, QObject,Signal
 from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
 import math
 import sys
 import gameobjects
 from map_logic import Hex
 
-class HoverableHexagon(QGraphicsPathItem):
+class SignalEmitter(QObject):
+    hex_hovered = Signal(int, int)
 
+class HoverableHexagon(QGraphicsPathItem):
+    
     def __init__(self, path, hex):
         super().__init__(path)
         self.setAcceptHoverEvents(True)
         self.hex = hex
+        self.emitter = SignalEmitter()
+        
 
     def hoverEnterEvent(self, event):
 
         q,r = self.hex.get_axial_coordinates()
 
+        self.emitter.hex_hovered.emit (q, r) # Emit the signal to the parent widget
         print(f"Hovering over hex {q},{r}")
 
         pen = QPen(QColor("#979068"))
@@ -163,5 +169,31 @@ class HexMapApp(QMainWindow):
     def __init__(self, hex_map, edge_map):
         super().__init__()
         self.visualization = HexMapVisualization(hex_map, edge_map)
-        self.setCentralWidget(self.visualization)
+        
+        # Create the new widget
+        self.hex_info_widget = QWidget()
+        self.hex_info_widget_layout = QVBoxLayout()
+        self.hex_info_widget.setLayout(self.hex_info_widget_layout)
+        self.hex_info_widget.setMinimumWidth(300)
+
+        # Create a label to contain the Hex Info
+        self.hex_info_label = QLabel("Hex Info")
+        self.hex_info_widget_layout.addWidget(self.hex_info_label)
+        self.hex_info_widget_layout.setAlignment(Qt.AlignTop)
+
+        # Create a horizontal layout to arrange the widgets side by side
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.visualization)
+        self.layout.addWidget(self.hex_info_widget)
+
+        # Create a central widget to hold the layout
+        self.central_widget = QWidget()
+        self.central_widget.setLayout(self.layout)
+
+        # Set the central widget and window title
+        self.setCentralWidget(self.central_widget)
         self.setWindowTitle("Hex Map Visualization")
+
+        
+        def handle_hex_hovered(q, r):
+            self.hex_info_label.setText(f"Hex Info: {q},{r}")

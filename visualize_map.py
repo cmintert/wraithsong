@@ -20,7 +20,6 @@ class HoverableHexagon(QGraphicsPathItem):
         self.hex = hex
         self.emitter = SignalEmitter()
         
-
     def hoverEnterEvent(self, event):
 
         q,r = self.hex.get_axial_coordinates()
@@ -89,8 +88,9 @@ class HexMapVisualization(QGraphicsView):
         for game_object in self.hex_map.get_hex_object_list(hex):
             if isinstance(game_object, gameobjects.Terrain):
                 self.add_graphic_to_hex(hex, size, game_object.texture)
-
-        # Add coordinate labels
+                self.add_coordinate_labels(hex, size)   
+    
+    def add_coordinate_labels(self, hex, size):
         hex_x_coordinates, hex_y_coordinates = hex.get_pixel_coordinates(size)
 
         label = QGraphicsTextItem(f"({hex.q_axis}, {hex.r_axis})")

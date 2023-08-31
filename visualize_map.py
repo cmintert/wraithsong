@@ -1,20 +1,52 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, \
+            QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem, QLabel, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
 import math
 import sys
 import gameobjects
 from map_logic import Hex
 
+class HoverableHexagon(QGraphicsPathItem):
+
+    hoverEntered = Signal(object)
+
+    def __init__(self, path, hex):
+        super().__init__(path)
+        self.setAcceptHoverEvents(True)
+        self.hex = hex
+
+    def hoverEnterEvent(self, event):
+
+        q,r = self.hex.get_axial_coordinates()
+
+        self.hoverEntered.emit((q,r))
+
+        pen = QPen(QColor("#979068"))
+        pen.setWidth(5)
+
+        self.setPen(pen)
+        self.setZValue(10)
+
+    def hoverLeaveEvent(self, event):
+        # Reset the pen color or style when the mouse leaves the hexagon
+        pen = QPen(QColor("#2b362b"))  # Original color
+        pen.setWidth(5)
+        self.setPen(pen)
+        self.setZValue(0)
+
 
 class HexMapVisualization(QGraphicsView):
-    def __init__(self, hex_map, edge_map):
-        super().__init__()
+    def __init__(self, hex_map, edge_map, parent):
+        super().__init__(parent)
         self.hex_map = hex_map
         self.edge_map = edge_map
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.draw_map()
+
+    def simple_test(self):
+        print("Hover entered.")
 
     def draw_map(self):
 
@@ -34,14 +66,14 @@ class HexMapVisualization(QGraphicsView):
 
        source_hex = edge.spawn_hex
        corners = source_hex.get_cornerpixel_coordinates(size)
-       
+
        edge_path = QPainterPath()
-       edge_path.moveTo(*corners[edge.spawn_direction])  # todo: look at this suspicious behavior
+       edge_path.moveTo(*corners[edge.spawn_direction])
        edge_path.lineTo(*corners[(edge.spawn_direction + 1)%6])
-       
+
        pen = QPen(QColor("#0000FF"))
        pen.setWidth(10)
-       
+
        #self.scene.addPath(edge_path, pen=pen)
 
     def draw_hex_terrain(self, hex, size):
@@ -61,7 +93,18 @@ class HexMapVisualization(QGraphicsView):
         pen = QPen(QColor("#2b362b"))
         pen.setWidth(5)
 
-        self.scene.addPath(hex_path, pen=pen)
+        hoverable_hex = HoverableHexagon(hex_path, hex)
+
+        print("hoverable_hex:", hoverable_hex)
+        print("self:", self)
+
+        print("Parent:", self.parent())
+        print("Info Label:", self.parent().info_label if self.parent() else None)
+
+        hoverable_hex.hoverEntered.connect(self.update_info_label)
+        hoverable_hex.setPen(pen)
+        self.scene.addItem(hoverable_hex)
+
 
         for game_object in self.hex_map.get_hex_object_list(hex):
             if isinstance(game_object, gameobjects.Terrain):
@@ -74,6 +117,12 @@ class HexMapVisualization(QGraphicsView):
         label.setPos(hex_x_coordinates - label.boundingRect().width() / 2,
                      hex_y_coordinates - label.boundingRect().height()/2)
         self.scene.addItem(label)
+
+    def update_info_label(self, coordinates):
+
+        q, r = coordinates
+        self.parent().info_label.setText(f"Hover over a hexagon to see its coordinates. Current hex: ({q}, {r})")
+
 
     def add_graphic_to_hex(self, hex_field, size, asset="missing.png"):
 
@@ -104,7 +153,7 @@ class HexMapVisualization(QGraphicsView):
         self.scene.addItem(pixmap_item)
 
     def add_graphic_to_edge(self, edge, size, asset="missing.png"):
-        
+
         rotation_matrix = (-60,0,60,-60,0,60)
 
         source_hex = edge.spawn_hex
@@ -134,6 +183,17 @@ class HexMapApp(QMainWindow):
 
     def __init__(self, hex_map, edge_map):
         super().__init__()
-        self.visualization = HexMapVisualization(hex_map, edge_map)
-        self.setCentralWidget(self.visualization)
+        self.info_label = QLabel("Hover over a hexagon to see its coordinates.")
+        self.visualization = HexMapVisualization(hex_map, edge_map, parent = self)
+
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.info_label)
+        layout.addWidget(self.visualization)
+
+
+        container = QWidget()
+        container.setLayout(layout)
+
+        self.setCentralWidget(container)
         self.setWindowTitle("Hex Map Visualization")

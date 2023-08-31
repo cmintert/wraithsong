@@ -48,9 +48,9 @@ window.show()
 
 sys.exit(app.exec())
 
-db.create_database()
-db.clear_database()
-db.create_gameobject_table()
-for map_hex, object_inventory in hexmap.hex_map.items():
-    for item in object_inventory:
-        db.write_gameobject(item, hexmap)
+#db.create_database()
+#db.clear_database()
+#db.create_gameobject_table()
+#for map_hex, object_inventory in hexmap.hex_map.items():
+#    for item in object_inventory:
+#        db.write_gameobject(item, hexmap)

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
 import math
@@ -6,6 +6,31 @@ import sys
 import gameobjects
 from map_logic import Hex
 
+class HoverableHexagon(QGraphicsPathItem):
+
+    def __init__(self, path, hex):
+        super().__init__(path)
+        self.setAcceptHoverEvents(True)
+        self.hex = hex
+
+    def hoverEnterEvent(self, event):
+
+        q,r = self.hex.get_axial_coordinates()
+
+        print(f"Hovering over hex {q},{r}")
+
+        pen = QPen(QColor("#979068"))
+        pen.setWidth(5)
+
+        self.setPen(pen)
+        self.setZValue(10)
+
+    def hoverLeaveEvent(self, event):
+        # Reset the pen color or style when the mouse leaves the hexagon
+        pen = QPen(QColor("#2b362b"))  # Original color
+        pen.setWidth(5)
+        self.setPen(pen)
+        self.setZValue(0)
 
 class HexMapVisualization(QGraphicsView):
     def __init__(self, hex_map, edge_map):
@@ -61,7 +86,10 @@ class HexMapVisualization(QGraphicsView):
         pen = QPen(QColor("#2b362b"))
         pen.setWidth(5)
 
-        self.scene.addPath(hex_path, pen=pen)
+        hoverable_hex = HoverableHexagon(hex_path, hex)
+
+        hoverable_hex.setPen(pen)
+        self.scene.addItem(hoverable_hex)
 
         for game_object in self.hex_map.get_hex_object_list(hex):
             if isinstance(game_object, gameobjects.Terrain):

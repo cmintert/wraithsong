@@ -268,19 +268,35 @@ class MoveCalculator:
         self.edge_map = edge_map    
     
     def get_move_to_neighbour_cost(self, hex_field):
-
-        cost_list = []     #cost_list is a list of movecost while direction equals the index
+                
+             #cost_list is a list of movecost while direction equals the index
+        cost_list = []
         
         for direction in range(6):
+            
             neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
             hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
             
             edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
             print(hex_field.get_edge_by_direction(direction))
 
-            print(f"Edge Objects: {edge_objects}")
+            impassable = False
 
-            for object in hex_objects:
-                if isinstance(object, Terrain):
-                    cost_list.append(object.movement_cost)
+            for game_object in hex_objects:
+                if isinstance(game_object, Terrain):
+                    movement_cost = game_object.movement_cost
+                    if game_object.movement_cost <= -1:
+                        impassable = True
+            
+            for game_object in edge_objects:
+                if isinstance(game_object, Terrain):                
+                    movement_cost += game_object.movement_cost
+                    if game_object.movement_cost <= -1:
+                        impassable = True
+            
+            if impassable == True:
+                movement_cost = -1            
+
+            cost_list.append(movement_cost)
+           
         return cost_list

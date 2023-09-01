@@ -22,7 +22,7 @@
     },
     "river": {
       "texture": "river.png",
-      "movement_cost": 0,
+      "movement_cost": 3,
       "edgeobject" : "True"
     }
   }

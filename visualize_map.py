@@ -104,9 +104,10 @@ class HexMapVisualization(QGraphicsView):
 
         # Create a scaled QPixmap object
 
-        scale_factor = 2.33 # This is the scale factor for the hexagon to fit drawn path
+        scale_factor = 2.33
 
         pixmap = QPixmap(f"assets/{asset}")
+
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)
 

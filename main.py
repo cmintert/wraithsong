@@ -15,7 +15,7 @@ class Game:
         self.edgemap = EdgeMap()
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
-        self.hexmap.initialize_hex_map(-3, 3, -3, 3)
+        self.hexmap.initialize_hex_map(-2, 2, -2, 2)
         self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
 
 game = Game("Wraithsong")

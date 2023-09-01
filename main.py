@@ -32,6 +32,9 @@ edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_directi
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(3), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(4), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 
+for hex_object in hexmap.get_hex_object_list(Hex.hex_obj_from_string("0,0")):
+    print(hex_object)
+
 players.append("Player 1")
 players.append("Player 2")
 

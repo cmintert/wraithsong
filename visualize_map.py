@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem, QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from PySide6.QtCore import Qt, QSize, QObject,Signal
-from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor
+from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QPainter
 import math
 import sys
 import gameobjects
@@ -22,11 +22,10 @@ class HoverableHexagon(QGraphicsPathItem):
         
     def hoverEnterEvent(self, event):
 
-        q,r = self.hex.get_axial_coordinates()
+        q_axis,r_axis = self.hex.get_axial_coordinates()
 
-        self.emitter.hex_hovered.emit (q, r) # Emit the signal to the parent widget
-        print(f"Hovering over hex {q},{r}")
-
+        self.emitter.hex_hovered.emit (q_axis, r_axis) # Emit the signal to the parent widget
+        
         pen = QPen(QColor(PEN_COLOR_HOVER))
         pen.setWidth(5)
 
@@ -96,6 +95,7 @@ class HexMapVisualization(QGraphicsView):
         label = QGraphicsTextItem(f"({hex.q_axis}, {hex.r_axis})")
         label.setPos(hex_x_coordinates - label.boundingRect().width() / 2,
                      hex_y_coordinates - label.boundingRect().height()/2)
+        
         self.scene.addItem(label)
 
     def add_graphic_to_hex(self, hex_field, size, asset="missing.png"):
@@ -151,18 +151,22 @@ class HexMapVisualization(QGraphicsView):
         pixmap_item.setRotation(rotation_matrix[edge.spawn_direction])
         pixmap_item.setPos(graphic_x_center, graphic_y_center)
 
+        # Draw the edge texture on screen
+
         self.scene.addItem(pixmap_item)
 
     def update_info_label(self, q, r):
-        self.parent_app.hex_info_label.setText(f"Hex Info: {q},{r}")
+        self.parent_app.hex_info_label.setText(f"Hex Coordinates: {q},{r}")
 
 
 class HexMapApp(QMainWindow):
 
     def __init__(self, hex_map, edge_map):
         super().__init__()
-        self.visualization = HexMapVisualization(hex_map, edge_map, self)
-        
+        self.map_area_widget = HexMapVisualization(hex_map, edge_map, self)
+        self.map_area_widget.setStyleSheet("background-color: #B3B3B3;")
+
+
         # Create the new widget
         self.hex_info_widget = QWidget()
         self.hex_info_widget_layout = QVBoxLayout()
@@ -176,7 +180,7 @@ class HexMapApp(QMainWindow):
 
         # Create a horizontal layout to arrange the widgets side by side
         self.layout = QHBoxLayout()
-        self.layout.addWidget(self.visualization)
+        self.layout.addWidget(self.map_area_widget)
         self.layout.addWidget(self.hex_info_widget)
 
         # Create a central widget to hold the layout
@@ -186,6 +190,3 @@ class HexMapApp(QMainWindow):
         # Set the central widget and window title
         self.setCentralWidget(self.central_widget)
         self.setWindowTitle("Hex Map Visualization")
-
-        
-        

@@ -241,6 +241,10 @@ class EdgeMap:
         else:
             self.edge_map[edge] = [game_object]
 
+    def get_edge_object_list(self, edge):
+
+        return self.edge_map[edge]
+
     def has_terrain(self, edge):
 
         for game_object in self.edge_map[edge]:
@@ -269,8 +273,14 @@ class MoveCalculator:
         
         for direction in range(6):
             neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
-            objects = self.hex_map.get_hex_object_list(neighbour_hex)
-            for object in objects:
+            hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
+            
+            edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
+            print(hex_field.get_edge_by_direction(direction))
+
+            print(f"Edge Objects: {edge_objects}")
+
+            for object in hex_objects:
                 if isinstance(object, Terrain):
                     cost_list.append(object.movement_cost)
         return cost_list

@@ -12,12 +12,12 @@
     },
     "mountain": {
       "texture": "mountain.png",
-      "movement_cost": 3,
+      "movement_cost": 4,
       "visibility": 3
     },
     "water": {
       "texture": "water.png",
-      "movement_cost": 0,
+      "movement_cost": -1,
       "visibility": 0
     },
     "river": {

@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QApplication
 
 import sys
 
-from map_logic import HexMap, EdgeMap, Hex, Edge
+from map_logic import HexMap, EdgeMap, Hex, Edge, MoveCalculator
 from visualize_map import HexMapApp
 from gameobjects import Terrain, ObjectIDGenerator
 
@@ -16,11 +16,13 @@ class Game:
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
         self.hexmap.initialize_hex_map(-3, 3, -3, 3)
+        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
 
 game = Game("Wraithsong")
 hexmap = game.hexmap
 edgemap = game.edgemap
 players = game.players
+move_calculator = game.move_calculator
 
 edgemap.initialize_edge_map(hexmap.hex_map)
 
@@ -40,6 +42,7 @@ hexmap.print_content_of_all_hexes()
 edgemap.print_content_of_all_edges()
 
 print (game.object_id_generator.used_counters)
+print(move_calculator.get_move_to_neighbour_cost(Hex.hex_obj_from_string("0,0")))
 
 app = QApplication(sys.argv)
 
@@ -47,6 +50,8 @@ window = HexMapApp(hexmap, edgemap)
 window.show()
 
 sys.exit(app.exec())
+
+
 
 db.create_database()
 db.clear_database()

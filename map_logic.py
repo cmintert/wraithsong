@@ -67,7 +67,6 @@ class Hex:
             edge_centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
         return edge_centers
 
-
     def get_edge_by_direction(self,direction):
 
         if direction < 0 or direction > 5:
@@ -79,8 +78,6 @@ class Hex:
         ordered_hex_pair = Hex.ordered_hex_pair(self, neighbour_hex)
 
         return Edge(ordered_hex_pair[0], ordered_hex_pair[1], direction)
-
-
 
     # ordered_hex_pair is used for keeping direction of Edge objects consistent
     @staticmethod
@@ -258,3 +255,22 @@ class EdgeMap:
             for game_object in game_objects:
                 print(game_object)
         print(f"There are {len(self.edge_map)} edges in the edge map")
+
+class MoveCalculator:
+
+    def __init__(self, hex_map, edge_map):
+
+        self.hex_map = hex_map
+        self.edge_map = edge_map    
+    
+    def get_move_to_neighbour_cost(self, hex_field):
+
+        cost_list = []     #cost_list is a list of movecost while direction equals the index
+        
+        for direction in range(6):
+            neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+            objects = self.hex_map.get_hex_object_list(neighbour_hex)
+            for object in objects:
+                if isinstance(object, Terrain):
+                    cost_list.append(object.movement_cost)
+        return cost_list

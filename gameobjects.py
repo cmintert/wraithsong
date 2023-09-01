@@ -71,7 +71,6 @@ class Terrain(GameObject):
                       if key not in ["internal_id", "name", "object_type"]]
         return super().__str__() + ", " + ", ".join(attributes)
 
-
 class Army(GameObject):
 
     def __init__(self, id_generator, name, owner):

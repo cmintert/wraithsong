@@ -126,7 +126,23 @@ class Hex:
 
 
 class Edge:
+    """
+    Defines an edge between two hexes. The hexes are ordered in the Edge object to keep the direction consistent. 
+    Two hexes are used to define the position of the edge to quickly access the hexes from the edge.
+    
+    The spawn_hex is the hex from which the edge is spawned. 
+    The spawn_direction is the direction of the edge from the spawn_hex.
+    
+    Args:
 
+        hex_field_1 (Hex): The first hex of the edge
+        hex_field_2 (Hex): The second hex of the edge
+        spawn_direction (int): The direction to spwan the edge from the spawn_hex
+    
+    Methods:
+
+        get_hex_fields: Returns the hexes of the edge in a tuple
+    """
     def __init__(self, hex_field_1, hex_field_2,spawn_direction):
         self.spawn_hex = hex_field_1
         self.spawn_direction = spawn_direction
@@ -189,7 +205,6 @@ class HexMap:
                 if game_object.object_id == object_id:
                     return game_object
         return None
-
 
     def print_content_of_all_hexes(self):
 

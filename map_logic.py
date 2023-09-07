@@ -267,36 +267,44 @@ class MoveCalculator:
         self.hex_map = hex_map
         self.edge_map = edge_map    
     
-    def get_move_to_neighbour_cost(self, hex_field):
+    def get_neighbour_condition(self, hex_field):
                 
-             #cost_list is a list of movecost while direction equals the index
-        cost_list = []
+             #condition_list is a list of movecost and condition while direction equals the index
+        condition_list = []
         
         for direction in range(6):
             
+            conditions = []
             neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
             hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
             
             edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
             print(hex_field.get_edge_by_direction(direction))
 
-            impassable = False
-
             for game_object in hex_objects:
                 if isinstance(game_object, Terrain):
                     movement_cost = game_object.movement_cost
-                    if game_object.movement_cost <= -1:
-                        impassable = True
-            
+                    if hasattr(game_object, "terrain_condition"):
+                        conditions.append(game_object.terrain_condition)
+
             for game_object in edge_objects:
                 if isinstance(game_object, Terrain):                
                     movement_cost += game_object.movement_cost
-                    if game_object.movement_cost <= -1:
-                        impassable = True
-            
-            if impassable == True:
-                movement_cost = -1            
+                    if hasattr(game_object, "terrain_condition"):
+                        conditions.append(game_object.terrain_condition)
 
-            cost_list.append(movement_cost)
+            condition_list.append((movement_cost, conditions))
            
-        return cost_list
+        return condition_list
+    
+    def get_movement_cost(self, hex_field, direction):
+        
+        condition_list = self.get_neighbour_condition(hex_field)
+        return condition_list[direction][0] #returns the movement cost of the direction
+    
+    def get_movement_conditions(self, hex_field, direction):
+        
+        condition_list = self.get_neighbour_condition(hex_field)
+        return condition_list[direction][1]
+    
+    

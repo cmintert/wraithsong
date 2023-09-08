@@ -45,7 +45,7 @@ class GameObject:
 
     def  delete(self,id_generator):
 
-        self.used_counters.remove(self.object_id)
+        id_generator.used_counters.remove(self.object_id)
         del self
 
 

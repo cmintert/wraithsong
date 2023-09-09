@@ -565,14 +565,14 @@ class MoveCalculator:
         self.hex_map = hex_map
         self.edge_map = edge_map    
     
-    def get_neighbour_condition(self, hex_field):
+    def get_neighbour_conditions(self, hex_field):
         """Returns a list of movement costs and conditions for each neighbor of a hex field.
 
         Args:
             hex_field: A HexField instance representing the hex field to get neighbors for.
 
         Returns:
-            A list of tuples, where each tuple contains the movement cost and conditions for a neighbor.
+            A list of tuples, where each tuple contains the movement cost and conditions for a neighbor in that order.
         """        
              #condition_list is a list of movecost and condition while direction equals the index
         condition_list = []
@@ -612,7 +612,7 @@ class MoveCalculator:
         Returns:
             An integer representing the movement cost of the neighbor in the given direction.
         """
-        condition_list = self.get_neighbour_condition(hex_field)
+        condition_list = self.get_neighbour_conditions(hex_field)
         return condition_list[direction][0] #returns the movement cost of the direction
     
     def get_movement_conditions(self, hex_field, direction):
@@ -625,7 +625,7 @@ class MoveCalculator:
         Returns:
             A list of strings representing the movement conditions of the neighbor in the given direction.
         """
-        condition_list = self.get_neighbour_condition(hex_field)
+        condition_list = self.get_neighbour_conditions(hex_field)
         return condition_list[direction][1]
     
     

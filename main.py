@@ -45,7 +45,7 @@ hexmap.print_content_of_all_hexes()
 edgemap.print_content_of_all_edges()
 
 print (game.object_id_generator.used_counters)
-print(move_calculator.get_neighbour_condition(Hex.hex_obj_from_string("0,0")))
+print(move_calculator.get_neighbour_conditions(Hex.hex_obj_from_string("0,0")))
 
 app = QApplication(sys.argv)
 

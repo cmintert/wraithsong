@@ -17,7 +17,7 @@
     },
     "water": {
       "texture": "water.png",
-      "movement_cost": -1,
+      "movement_cost": 1,
       "visibility": 0,
       "terrain_condition": "swimming"
     },

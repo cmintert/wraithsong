@@ -249,7 +249,7 @@ class Hex:
             ValueError: If the string is not in the correct format.
         """
         #Check if the string looks like a hex coordinate using a simple regex
-        if not re.match(r"^(\d+),(\d+)$", string):
+        if not re.match(r"^(-?\d+),(-?\d+)$", string):
             raise ValueError("The string is not in the correct format q,r ")
 
         return Hex(int(string.split(",")[0]), int(string.split(",")[1]))
@@ -372,6 +372,18 @@ class HexMap:
                 return True
         return False
 
+    def hex_exists(self, hex_field):
+        """
+        Checks if a hexagonal field exists in the map.
+
+        Args:
+        - hex_field: the hexagonal field to check
+
+        Returns:
+        - True if the hexagonal field exists in the map, False otherwise
+        """
+        return hex_field in self.hex_map
+
     def append_object_to_hex(self, hex_field, game_object):
         """
         Appends a game object to a hexagonal field.
@@ -401,7 +413,10 @@ class HexMap:
         Returns:
         - the list of game objects in the hexagonal field
         """
-        return self.hex_map[hex_field]
+        if hex_field not in self.hex_map:
+            return []
+        else:
+            return self.hex_map[hex_field]
 
     def get_object_by_id(self, object_id):
         """
@@ -577,55 +592,71 @@ class MoveCalculator:
              #condition_list is a list of movecost and condition while direction equals the index
         condition_list = []
         
+        valid_directions = []
+
         for direction in range(6):
-            
-            conditions = []
             neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
-            hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
+            if self.hex_map.hex_exists(neighbour_hex):
+                valid_directions.append(direction)
+
+        for direction in valid_directions:
             
-            edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
-            print(hex_field.get_edge_by_direction(direction))
-
-            for game_object in hex_objects:
-                if isinstance(game_object, Terrain):
-                    movement_cost = game_object.movement_cost
-                    if hasattr(game_object, "terrain_condition"):
-                        conditions.append(game_object.terrain_condition)
-
-            for game_object in edge_objects:
-                if isinstance(game_object, Terrain):                
-                    movement_cost += game_object.movement_cost
-                    if hasattr(game_object, "terrain_condition"):
-                        conditions.append(game_object.terrain_condition)
-
-            condition_list.append((movement_cost, conditions))
+            get_movement_cost = self.get_movement_cost(hex_field, direction)
+            get_movement_conditions = self.get_movement_conditions(hex_field, direction)
+            condition_list.append((get_movement_cost, get_movement_conditions, hex_field.get_axial_coordinates(), direction))
            
         return condition_list
     
     def get_movement_cost(self, hex_field, direction):
-        """Returns the movement cost for a neighbor in a given direction.
-
+        """
+        Returns the movement cost for a neighbor in a given direction.
+        
         Args:
             hex_field: A HexField instance representing the hex field to get neighbors for.
             direction: An integer representing the direction of the neighbor.
-
-        Returns:
+            
+            Returns:
             An integer representing the movement cost of the neighbor in the given direction.
         """
-        condition_list = self.get_neighbour_conditions(hex_field)
-        return condition_list[direction][0] #returns the movement cost of the direction
+        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
+
+        for game_object in hex_objects:
+                if isinstance(game_object, Terrain):
+                    movement_cost = game_object.movement_cost
+        
+        for game_object in edge_objects:
+                if isinstance(game_object, Terrain):                
+                    movement_cost += game_object.movement_cost
+
+        return movement_cost
     
     def get_movement_conditions(self, hex_field, direction):
-        """Returns the movement conditions for a neighbor in a given direction.
+        
+        conditions = []  
+        
 
-        Args:
-            hex_field: A HexField instance representing the hex field to get neighbors for.
-            direction: An integer representing the direction of the neighbor.
+        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
 
-        Returns:
-            A list of strings representing the movement conditions of the neighbor in the given direction.
-        """
-        condition_list = self.get_neighbour_conditions(hex_field)
-        return condition_list[direction][1]
+        for game_object in hex_objects:
+            if isinstance(game_object, Terrain):
+                if hasattr(game_object, "terrain_condition"):
+                    conditions.append(game_object.terrain_condition)
+
+        for game_object in edge_objects:
+            if isinstance(game_object, Terrain):                
+                if hasattr(game_object, "terrain_condition"):
+                    conditions.append(game_object.terrain_condition)
+        
+        return conditions
     
-    
+    def neighbouring_hex_and_edge_objects(self, hex_field,direction):   
+
+        neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+
+        if self.hex_map.hex_exists(hex_field):
+            hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
+            edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
+
+            return hex_objects, edge_objects
+        else :
+            return [],[]    

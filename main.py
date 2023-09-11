@@ -8,6 +8,24 @@ from gameobjects import Terrain, ObjectIDGenerator
 
 class Game:
 
+    """A class representing a game with hex maps, edge maps, and players.
+
+    The `Game` class initializes a hexagonal map, an edge map, and a list of players. 
+    It also uses an object ID generator for generating unique IDs and a move calculator 
+    for computing movements on the map.
+
+    Attributes:
+        name (str): The name of the game.
+        hexmap (HexMap): An instance of the HexMap class representing the game's hexagonal map.
+        edgemap (EdgeMap): An instance of the EdgeMap class representing the edges of the hex map.
+        players (list): A list of players participating in the game.
+        object_id_generator (ObjectIDGenerator): An instance for generating unique object IDs.
+        move_calculator (MoveCalculator): A calculator for determining movement within the game.
+
+    Args:
+        name (str): The name of the game.
+    """
+
     def __init__(self, name):
 
         self.name = name
@@ -17,11 +35,7 @@ class Game:
         self.object_id_generator = ObjectIDGenerator()
         self.hexmap.initialize_hex_map(-2, 2, -2, 2)
         self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
-
-
-
-
-
+        
 
 
 
@@ -31,7 +45,10 @@ edgemap = game.edgemap
 players = game.players
 move_calculator = game.move_calculator
 
+hexmap.fill_map_with_terrain(game)
 edgemap.initialize_edge_map(hexmap.hex_map)
+
+
 
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
@@ -39,20 +56,22 @@ edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_directi
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(3), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(4), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 
-for hex_object in hexmap.get_hex_object_list(Hex.hex_obj_from_string("0,0")):
-    print(hex_object)
+
 
 players.append("Player 1")
 players.append("Player 2")
 
-hexmap.fill_map_with_terrain(game)
 
 
-hexmap.print_content_of_all_hexes()
-edgemap.print_content_of_all_edges()
+print(move_calculator.collect_all_nodes())
+print(move_calculator.collect_move_paths())
 
-print (game.object_id_generator.used_counters)
-print(move_calculator.get_neighbour_conditions(Hex.hex_obj_from_string("-2,1")))
+
+#hexmap.print_content_of_all_hexes()
+#edgemap.print_content_of_all_edges()
+
+#print (game.object_id_generator.used_counters)
+#print(move_calculator.get_neighbour_conditions(Hex.hex_obj_from_string("-1,-2")))
 app = QApplication(sys.argv)
 
 window = HexMapApp(hexmap, edgemap)

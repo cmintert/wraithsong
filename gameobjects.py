@@ -3,17 +3,47 @@ import uuid
 import random
 
 class ObjectIDGenerator:
+    """Manages the generation of unique object IDs.
 
+    This class provides functionality to generate unique IDs based on a combination of 
+    an object type, a name, and a random counter. The uniqueness of IDs is ensured within 
+    the context of a single instance of the `ObjectIDGenerator` class.
+
+    Attributes:
+        used_counters (set): A set of counters that have been used to generate unique IDs.
+
+    Methods:
+        get_random_counter: Generates a random 4-digit counter.
+        get_unique_id: Generates a unique ID based on the provided name and object type.
+    """
     def __init__(self):
         self.used_counters = set()
 
     def get_random_counter(self):
+        """Generates and returns a random 4-digit counter as a string.
 
+        Returns:
+            str: A 4-digit random counter.
+        """
         counter = random.randint(0, 9999)
         formatted_counter = str(counter).zfill(4)
         return formatted_counter
 
     def get_unique_id(self, name, object_type):
+        """Generates a unique ID based on the provided name and object type.
+
+        The generated ID is in the format: `<First 3 letters of object_type>_<name>_<random counter>`.
+        This method ensures the uniqueness of the ID within the context of the current instance of 
+        the `ObjectIDGenerator` class.
+
+        Args:
+            name (str): The name to be included in the ID.
+            object_type (str): The type of the object for which the ID is being generated.
+        
+        Returns:
+            str: A unique ID.
+        """        
+
         while True:
             random_counter = self.get_random_counter()
             unique_id = f"{object_type.upper()[0:3]}_{name}_{random_counter}"
@@ -22,7 +52,23 @@ class ObjectIDGenerator:
                 return unique_id
 
 class GameObject:
+    """
+    Represents a generic game object with unique identifiers and attributes.
 
+    Each game object has a unique `object_id` generated using the provided `id_generator` 
+    as well as a universally unique identifier (`internal_id`).
+
+    Attributes:
+        object_id (str): A unique identifier generated using the id_generator.
+        internal_id (str): A universally unique identifier (UUID) for the object.
+        name (str): A human-readable name for the game object.
+        object_type (str): The type or category of the game object.
+
+    Args:
+        id_generator (ObjectIDGenerator): An instance used to generate unique object IDs.
+        name (str, optional): The name of the game object. Defaults to "Not specified".
+        object_type (str, optional): The type or category of the game object. Defaults to None.
+    """
     def __init__(self, id_generator, name="Not specified", object_type=None):
         self.object_id = id_generator.get_unique_id(name, object_type)
         self.internal_id = str(uuid.uuid4())
@@ -31,12 +77,33 @@ class GameObject:
 
 
     def __str__(self):
+        """
+        Returns a string representation of the game object.
+
+        Returns:
+            str: A string with the format "ID: {internal_id}, Name: {name}, Type: {object_type}".
+        """
         return f"ID: {self.internal_id}, Name: {self.name}, Type: {self.object_type}"
 
     def get_id(self):
+        """
+        Retrieves the internal UUID of the game object.
+
+        Returns:
+            str: The internal UUID of the game object.
+        """
         return self.internal_id
 
     def get_position(self,hexmap):
+        """
+        Retrieves the position of the game object in the provided hex map.
+
+        Args:
+            hexmap (HexMap): The hex map in which to search for the game object.
+
+        Returns:
+            HexField or None: The hex field where the game object is located, or None if not found.
+        """
 
         for hex_field in hexmap.hex_map.keys():
             if self in hexmap.hex_map[hex_field]:
@@ -44,12 +111,36 @@ class GameObject:
         return None
 
     def  delete(self,id_generator):
+        """
+        Deletes the game object and removes its unique ID from the used counters of the id_generator.
 
+        Args:
+            id_generator (ObjectIDGenerator): The generator that was used to create the object's unique ID.
+        """
         id_generator.used_counters.remove(self.object_id)
         del self
 
 
 class Terrain(GameObject):
+    """
+    Represents a terrain type in the game, inheriting properties from the GameObject class.
+
+    The Terrain class describes a specific type of terrain, such as a forest or mountain, 
+    with additional attributes loaded dynamically from a "terrain.json" file based on the 
+    provided `terrain_type`.
+
+    Attributes:
+        terrain_type (str): The specific type of the terrain (e.g., "forest", "mountain").
+        elevation (int): The elevation level of the terrain.
+        [dynamic attributes]: Attributes loaded dynamically from the "terrain.json" file 
+                              based on the provided `terrain_type`.
+
+    Args:
+        id_generator (ObjectIDGenerator): An instance used to generate unique object IDs.
+        name (str): The name of the terrain.
+        terrain_type (str): The specific type of terrain.
+        elevation (int, optional): The elevation level of the terrain. Defaults to 0.
+    """
 
     def __init__(self,id_generator, name, terrain_type, elevation=0):
         super().__init__(id_generator, name, object_type="terrain")
@@ -67,6 +158,14 @@ class Terrain(GameObject):
             setattr(self, key, value)
 
     def __str__(self):
+        """
+        Returns a detailed string representation of the terrain object.
+
+        The returned string includes the object's ID, name, type, and any dynamically loaded attributes.
+
+        Returns:
+            str: A string representation of the terrain object.
+        """
         attributes = [f"{key}: {getattr(self, key)}" for key in vars(self)
                       if key not in ["internal_id", "name", "object_type"]]
         return super().__str__() + ", " + ", ".join(attributes)

@@ -31,13 +31,8 @@ class Game:
         self.name = name
         self.hexmap = HexMap()
         self.edgemap = EdgeMap()
-        self.hexmap.initialize_hex_map(-2, 2, -2, 2)
-        self.edgemap.initialize_edge_map(self.hexmap.hex_map)
-        self.players = []
         self.object_id_generator = ObjectIDGenerator()
-
-        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
-        self.graph = Graph(self.move_calculator)
+        self.players = []
 
 
 
@@ -45,13 +40,13 @@ game = Game("Wraithsong")
 hexmap = game.hexmap
 edgemap = game.edgemap
 players = game.players
-move_calculator = game.move_calculator
-graph = game.graph
 
 
-hexmap.fill_map_with_terrain(game)
+hexmap.initialize_hex_map(-2, 2, -2, 2)
 edgemap.initialize_edge_map(hexmap.hex_map)
-
+hexmap.fill_map_with_terrain(game)
+move_calculator = MoveCalculator(hexmap, edgemap)
+graph=Graph(move_calculator)
 
 
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
@@ -65,10 +60,6 @@ edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_directi
 players.append("Player 1")
 players.append("Player 2")
 
-
-
-print(move_calculator.collect_all_nodes())
-print(move_calculator.collect_move_paths())
 print(graph)
 
 #print(move_calculator.distance_to_all(Hex.hex_obj_from_string("0,0")))
@@ -78,6 +69,17 @@ print(graph)
 
 #print (game.object_id_generator.used_counters)
 #print(move_calculator.get_neighbour_conditions(Hex.hex_obj_from_string("-1,-2")))
+
+
+
+
+
+
+
+
+
+
+
 app = QApplication(sys.argv)
 
 window = HexMapApp(hexmap, edgemap)

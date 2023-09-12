@@ -651,8 +651,6 @@ class MoveCalculator:
         print(f"Hex objects: {hex_objects}")
         print(f"Edge objects: {edge_objects}")
 
-        movement_cost = 666
-
         for game_object in hex_objects:
             if isinstance(game_object, Terrain):
                 movement_cost = game_object.movement_cost
@@ -743,5 +741,5 @@ class Graph:
         self.neighbours = move_calculator.collect_neighbours_for_all()
 
         print("Graph initialized")
-        print(f"self.edges: {self.edges}")
-        print(f"self.neighbours: {self.neighbours}")
+
+        print(self.edges)

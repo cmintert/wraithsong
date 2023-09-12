@@ -573,7 +573,6 @@ class MoveCalculator:
         edge_map: An EdgeMap instance representing the game map edges.
     """
 
-
     def __init__(self, hex_map, edge_map):
         """
         Initializes a MoveCalculator instance.
@@ -584,6 +583,17 @@ class MoveCalculator:
         """
         self.hex_map = hex_map
         self.edge_map = edge_map          
+
+    def get_neighbours(self, hex_field):
+
+        neighbours = []
+
+        for direction in range(6):
+            neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+            if self.hex_map.hex_exists(neighbour_hex):
+                neighbours.append(Hex.get_axial_coordinates(neighbour_hex))
+
+        return neighbours
 
     def get_neighbour_conditions(self, hex_field):
         """
@@ -620,7 +630,7 @@ class MoveCalculator:
             movement_cost = self.get_movement_cost(hex_field, direction)
             movement_conditions = self.get_movement_conditions(hex_field, direction)
             move_target = Hex.get_neighbour_hex(hex_field, direction)
-            condition_list.append((movement_cost, movement_conditions, hex_field.get_axial_coordinates(), direction, move_target.get_axial_coordinates()))
+            condition_list.append((hex_field.get_axial_coordinates(), direction, move_target.get_axial_coordinates(), movement_cost, movement_conditions))
            
         return condition_list
     
@@ -683,7 +693,17 @@ class MoveCalculator:
         else :
             return [],[]    
     
-  
+    def collect_neighbours_for_all(self):
+        
+        all_nodes = self.collect_all_nodes()    
+        neighbour_list = {} 
+
+        for node in all_nodes:
+
+            neighbours = self.get_neighbours(node)
+            neighbour_list.update({node: neighbours})
+
+        return neighbour_list
 
     def collect_all_nodes(self):
 
@@ -711,7 +731,14 @@ class MoveCalculator:
                 all_move_paths.append(path)
 
         return all_move_paths
-       
+    
+class Graph:
         
+    def __init__(self, move_calculator):
 
+        self.edges = move_calculator.collect_move_paths()
+        self.neighbours = move_calculator.collect_neighbours_for_all()  
 
+        print("Graph initialized")
+        print(f"self.edges: {self.edges}")
+        print(f"self.neighbours: {self.neighbours}")    

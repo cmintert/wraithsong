@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QApplication
 
 import sys
 
-from map_logic import HexMap, EdgeMap, Hex, Edge, MoveCalculator
+from map_logic import HexMap, EdgeMap, Hex, Edge, MoveCalculator, Graph
 from visualize_map import HexMapApp
 from gameobjects import Terrain, ObjectIDGenerator
 
@@ -34,7 +34,8 @@ class Game:
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
         self.hexmap.initialize_hex_map(-2, 2, -2, 2)
-        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
+        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap) 
+        #self.graph = Graph(self.move_calculator)
         
 
 
@@ -44,6 +45,8 @@ hexmap = game.hexmap
 edgemap = game.edgemap
 players = game.players
 move_calculator = game.move_calculator
+#graph = game.graph
+
 
 hexmap.fill_map_with_terrain(game)
 edgemap.initialize_edge_map(hexmap.hex_map)
@@ -65,7 +68,9 @@ players.append("Player 2")
 
 print(move_calculator.collect_all_nodes())
 print(move_calculator.collect_move_paths())
+#print(graph)
 
+#print(move_calculator.distance_to_all(Hex.hex_obj_from_string("0,0")))
 
 #hexmap.print_content_of_all_hexes()
 #edgemap.print_content_of_all_edges()

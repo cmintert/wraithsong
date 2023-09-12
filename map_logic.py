@@ -592,7 +592,7 @@ class MoveCalculator:
         for direction in range(6):
             neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
             if self.hex_map.hex_exists(neighbour_hex):
-                neighbours.append(Hex.get_axial_coordinates(neighbour_hex))
+                neighbours.append(neighbour_hex)
 
         return neighbours
 
@@ -721,9 +721,6 @@ class MoveCalculator:
 
         for node in all_nodes:
 
-            print(node)
-            print("")
-
             paths = self.get_neighbour_conditions(node)
 
             for path in paths:
@@ -740,6 +737,36 @@ class Graph:
         self.edges = move_calculator.collect_move_paths()
         self.neighbours = move_calculator.collect_neighbours_for_all()
 
-        print("Graph initialized")
+        print("Initializing graph done")
 
-        print(self.edges)
+    def get_movement_cost(self, node1, node2):
+
+        return 1
+
+    def djikstra(self,start_hex):
+
+        distances = {}
+        for node in self.neighbours.keys():
+            distances[node] = math.inf
+        distances[start_hex] = 0
+
+        unvisited = set(self.neighbours.keys())
+
+        while unvisited:
+            # Select the node with the smallest distance
+            current_node = min(unvisited, key=lambda node: distances[node])
+            distances = self.update_neighbour_distances(current_node, distances)
+            unvisited.remove(current_node)
+
+        print(f"Distances: {distances}")
+
+    def update_neighbour_distances(self, current_node, distances):
+
+        for neighbour in self.neighbours[current_node]:
+            if neighbour in distances:
+                new_distance = distances[current_node] + self.get_movement_cost(current_node, neighbour)
+
+                if new_distance < distances[neighbour]:
+                    distances[neighbour] = new_distance
+
+        return distances

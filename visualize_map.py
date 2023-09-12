@@ -87,8 +87,8 @@ class HexMapVisualization(QGraphicsView):
         for game_object in self.hex_map.get_hex_object_list(hex):
             if isinstance(game_object, gameobjects.Terrain):
                 self.add_graphic_to_hex(hex, size, game_object.texture)
-                self.add_coordinate_labels(hex, size)   
-    
+                self.add_coordinate_labels(hex, size)
+
     def add_coordinate_labels(self, hex, size):
         hex_x_coordinates, hex_y_coordinates = hex.get_pixel_coordinates(size)
 

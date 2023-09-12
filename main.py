@@ -42,12 +42,13 @@ edgemap = game.edgemap
 players = game.players
 
 
-hexmap.initialize_hex_map(-2, 2, -2, 2)
+hexmap.initialize_hex_map(-8, 8, -8, 8)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 move_calculator = MoveCalculator(hexmap, edgemap)
 graph=Graph(move_calculator)
 
+graph.djikstra(Hex.hex_obj_from_string("7,-3"))
 
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
@@ -60,7 +61,7 @@ edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_directi
 players.append("Player 1")
 players.append("Player 2")
 
-print(graph)
+
 
 #print(move_calculator.distance_to_all(Hex.hex_obj_from_string("0,0")))
 

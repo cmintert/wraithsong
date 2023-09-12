@@ -115,7 +115,8 @@ class Hex:
         corners = []
         for corner_number in range(6):
             angle_deg = (60 * corner_number - 90) % 360
-            angle_rad = math.pi / 180 * angle_deg  
+            angle_rad = math.pi / 180 * angle_deg
+
             corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
         return corners
 
@@ -534,7 +535,7 @@ class EdgeMap:
         Returns:
             list: A list of game objects in the edge.
         """
-            
+
         return self.edge_map[edge]
 
     def has_terrain(self, edge):
@@ -556,7 +557,7 @@ class EdgeMap:
         """
         Prints the content of all edges in the map.
         """
-    
+
         for edge, game_objects in self.edge_map.items():
             print(edge)
             for game_object in game_objects:
@@ -653,19 +654,19 @@ class MoveCalculator:
         movement_cost = 666
 
         for game_object in hex_objects:
-                if isinstance(game_object, Terrain):
-                    movement_cost = game_object.movement_cost
+            if isinstance(game_object, Terrain):
+                movement_cost = game_object.movement_cost
         
         for game_object in edge_objects:
-                if isinstance(game_object, Terrain):                
-                    movement_cost += game_object.movement_cost
+            if isinstance(game_object, Terrain):
+                movement_cost += game_object.movement_cost
 
         return movement_cost
     
     def get_movement_conditions(self, hex_field, direction):
-        
-        conditions = []  
-        
+
+        conditions = []
+
 
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
 
@@ -675,13 +676,13 @@ class MoveCalculator:
                     conditions.append(game_object.terrain_condition)
 
         for game_object in edge_objects:
-            if isinstance(game_object, Terrain):                
+            if isinstance(game_object, Terrain):
                 if hasattr(game_object, "terrain_condition"):
                     conditions.append(game_object.terrain_condition)
         
         return conditions
     
-    def neighbouring_hex_and_edge_objects(self, hex_field,direction):   
+    def neighbouring_hex_and_edge_objects(self, hex_field,direction):
 
         neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
 
@@ -691,12 +692,12 @@ class MoveCalculator:
 
             return hex_objects, edge_objects
         else :
-            return [],[]    
-    
+            return [],[]
+
     def collect_neighbours_for_all(self):
         
-        all_nodes = self.collect_all_nodes()    
-        neighbour_list = {} 
+        all_nodes = self.collect_all_nodes()
+        neighbour_list = {}
 
         for node in all_nodes:
 
@@ -710,7 +711,7 @@ class MoveCalculator:
         all_nodes = []
 
         for hex_field in self.hex_map.hex_map.keys():
-            all_nodes.append(hex_field)    
+            all_nodes.append(hex_field)
 
         return all_nodes
     
@@ -718,7 +719,7 @@ class MoveCalculator:
 
         all_move_paths = []
 
-        all_nodes = self.collect_all_nodes()    
+        all_nodes = self.collect_all_nodes()
 
         for node in all_nodes:
 
@@ -736,9 +737,11 @@ class Graph:
         
     def __init__(self, move_calculator):
 
+        print("Initializing graph")
+
         self.edges = move_calculator.collect_move_paths()
-        self.neighbours = move_calculator.collect_neighbours_for_all()  
+        self.neighbours = move_calculator.collect_neighbours_for_all()
 
         print("Graph initialized")
         print(f"self.edges: {self.edges}")
-        print(f"self.neighbours: {self.neighbours}")    
+        print(f"self.neighbours: {self.neighbours}")

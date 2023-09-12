@@ -31,12 +31,13 @@ class Game:
         self.name = name
         self.hexmap = HexMap()
         self.edgemap = EdgeMap()
+        self.hexmap.initialize_hex_map(-2, 2, -2, 2)
+        self.edgemap.initialize_edge_map(self.hexmap.hex_map)
         self.players = []
         self.object_id_generator = ObjectIDGenerator()
-        self.hexmap.initialize_hex_map(-2, 2, -2, 2)
-        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap) 
-        #self.graph = Graph(self.move_calculator)
-        
+
+        self.move_calculator = MoveCalculator(self.hexmap, self.edgemap)
+        self.graph = Graph(self.move_calculator)
 
 
 
@@ -45,7 +46,7 @@ hexmap = game.hexmap
 edgemap = game.edgemap
 players = game.players
 move_calculator = game.move_calculator
-#graph = game.graph
+graph = game.graph
 
 
 hexmap.fill_map_with_terrain(game)
@@ -68,7 +69,7 @@ players.append("Player 2")
 
 print(move_calculator.collect_all_nodes())
 print(move_calculator.collect_move_paths())
-#print(graph)
+print(graph)
 
 #print(move_calculator.distance_to_all(Hex.hex_obj_from_string("0,0")))
 

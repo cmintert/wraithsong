@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QApplication
 
 import sys
 
-from map_logic import HexMap, EdgeMap, Hex, Edge, MoveCalculator, Graph
+from map_logic import HexMap, EdgeMap, Hex, MoveCalculator, Graph
 from visualize_map import HexMapApp
 from gameobjects import Terrain, ObjectIDGenerator
 
@@ -77,26 +77,10 @@ players.append("Player 1")
 players.append("Player 2")
 
 
-# print(move_calculator.distance_to_all(Hex.hex_obj_from_string("0,0")))
-
-# hexmap.print_content_of_all_hexes()
-# edgemap.print_content_of_all_edges()
-
-# print (game.object_id_generator.used_counters)
-# print(move_calculator.get_neighbour_conditions(Hex.hex_obj_from_string("-1,-2")))
-
-
 app = QApplication(sys.argv)
 
 window = HexMapApp(hexmap, edgemap, graph)
+window.setStyleSheet("QMainWindow { background-color: gray; }")
 window.show()
 
 sys.exit(app.exec())
-
-
-db.create_database()
-db.clear_database()
-db.create_gameobject_table()
-for map_hex, object_inventory in hexmap.hex_map.items():
-    for item in object_inventory:
-        db.write_gameobject(item, hexmap)

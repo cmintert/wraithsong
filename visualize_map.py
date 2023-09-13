@@ -63,7 +63,8 @@ class HexMapVisualization(QGraphicsView):
         self.setScene(self.scene)
         self.draw_map()
 
-    def interpolate_color(self, min_color, max_color, factor):
+    @staticmethod
+    def interpolate_color(min_color, max_color, factor):
         """
         Interpolate between two QColor objects based on a factor.
 
@@ -279,7 +280,7 @@ class HexMapApp(QMainWindow):
     def __init__(self, hex_map, edge_map, graph):
         super().__init__()
         self.map_area_widget = HexMapVisualization(hex_map, edge_map, graph, self)
-        self.map_area_widget.setStyleSheet("background-color: #B3B3B3;")
+        self.map_area_widget.setStyleSheet("background-color: darkgray;")
 
         # Create the new widget
         self.hex_info_widget = QWidget()

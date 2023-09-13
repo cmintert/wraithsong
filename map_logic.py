@@ -84,7 +84,7 @@ class Hex:
         Returns:
             tuple: A tuple containing the q-axis and r-axis coordinates of the Hex object.
         """
-        return (self.q_axis, self.r_axis)
+        return self.q_axis, self.r_axis
 
     def get_cube_coordinates(self):
         """
@@ -93,7 +93,7 @@ class Hex:
         Returns:
             tuple: A tuple containing the q-axis, r-axis, and s-axis coordinates of the Hex object.
         """
-        return (self.q_axis, self.r_axis, self.s_axis)
+        return self.q_axis, self.r_axis, self.s_axis
 
     def get_pixel_coordinates(self, size):
         """
@@ -108,7 +108,7 @@ class Hex:
 
         x_axis = size * (3**0.5) * (self.q_axis + self.r_axis / 2)
         y_axis = size * 1.5 * self.r_axis
-        return (x_axis, y_axis)
+        return x_axis, y_axis
 
     def get_cornerpixel_coordinates(self, size):
         """
@@ -202,8 +202,8 @@ class Hex:
         if hex1.q_axis < hex2.q_axis or (
             hex1.q_axis == hex2.q_axis and hex1.r_axis < hex2.r_axis
         ):
-            return (hex1, hex2)
-        return (hex2, hex1)
+            return hex1, hex2
+        return hex2, hex1
 
     @classmethod
     def hex_direction(cls, hex_field_1, hex_field_2):
@@ -356,7 +356,7 @@ class Edge:
         Returns:
             tuple: A tuple containing the two hexes of the edge.
         """
-        return (self.hex_field_1, self.hex_field_2)
+        return self.hex_field_1, self.hex_field_2
 
 
 class HexMap:

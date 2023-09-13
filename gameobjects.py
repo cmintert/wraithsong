@@ -21,7 +21,8 @@ class ObjectIDGenerator:
     def __init__(self):
         self.used_counters = set()
 
-    def get_random_counter(self):
+    @staticmethod
+    def get_random_counter():
         """Generates and returns a random 4-digit counter as a string.
 
         Returns:

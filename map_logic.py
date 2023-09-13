@@ -305,7 +305,7 @@ class Edge:
             other (object): The edge object to compare with. 
         """
         if isinstance(other, Edge):
-            return self.hex_field_1 == other.hex_field_1 and self.hex_field_2 == other.hex_field_2 and self.spawn_direction == other.spawn_direction
+            return self.hex_field_1 == other.hex_field_1 and self.hex_field_2 == other.hex_field_2
         return False
 
     def __str__(self):
@@ -583,7 +583,7 @@ class MoveCalculator:
             edge_map: An EdgeMap instance representing the game map edges.
         """
         self.hex_map = hex_map
-        self.edge_map = edge_map          
+        self.edge_map = edge_map
 
     def get_neighbours(self, hex_field):
 
@@ -597,24 +597,7 @@ class MoveCalculator:
         return neighbours
 
     def get_neighbour_conditions(self, hex_field):
-        """
-        Retrieves the valid neighboring directions of a given hex field and their associated movement costs and conditions.
 
-        Given a hex field, this function determines which of its six potential neighboring directions are valid
-        (i.e., exist within the hex map). For each valid direction, it calculates the movement cost to move in that direction,
-        as well as any conditions associated with that movement. The function returns a list of tuples, where each tuple
-        contains the movement cost, movement conditions, axial coordinates of the starting hex field, and the direction.
-
-        Args:
-            hex_field (Hex): The hex field for which neighboring conditions are to be determined.
-
-        Returns:
-            List[Tuple[int, Any, Tuple[int, int], int]]: A list of tuples. Each tuple contains:
-                - Movement cost (int): The cost of moving in the specified direction.
-                - Movement conditions (Any): Conditions associated with moving in the specified direction. The type can vary.
-                - Axial coordinates (Tuple[int, int]): The axial coordinates of the starting hex field.
-                - Direction (int): The direction (0-5) representing the neighboring hex field.
-        """
         condition_list = []
 
         valid_directions = []
@@ -624,14 +607,12 @@ class MoveCalculator:
             if self.hex_map.hex_exists(neighbour_hex):
                 valid_directions.append(direction)
 
-        print(f"Valid directions for {hex_field}: {valid_directions}")
-
         for direction in valid_directions:
             
             movement_cost = self.get_movement_cost(hex_field, direction)
             movement_conditions = self.get_movement_conditions(hex_field, direction)
             move_target = Hex.get_neighbour_hex(hex_field, direction)
-            condition_list.append((hex_field.get_axial_coordinates(), direction, move_target.get_axial_coordinates(), movement_cost, movement_conditions))
+            condition_list.append((hex_field, direction, move_target, movement_cost, movement_conditions))
            
         return condition_list
     
@@ -647,9 +628,6 @@ class MoveCalculator:
             An integer representing the movement cost of the neighbor in the given direction.
         """
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
-
-        print(f"Hex objects: {hex_objects}")
-        print(f"Edge objects: {edge_objects}")
 
         for game_object in hex_objects:
             if isinstance(game_object, Terrain):
@@ -719,6 +697,8 @@ class MoveCalculator:
 
         all_nodes = self.collect_all_nodes()
 
+        print(f"How many nodes? {len(all_nodes)}")
+
         for node in all_nodes:
 
             paths = self.get_neighbour_conditions(node)
@@ -736,29 +716,37 @@ class Graph:
 
         self.edges = move_calculator.collect_move_paths()
         self.neighbours = move_calculator.collect_neighbours_for_all()
-
-        print("Initializing graph done")
+        self.nodes = move_calculator.collect_all_nodes()
 
     def get_movement_cost(self, node1, node2):
 
-        return 1
+        for item in self.edges:
+            if item[0] == node1 and item[2] == node2:
+                return item[3]
 
     def djikstra(self,start_hex):
 
         distances = {}
+
+        # Set all distances to infinity and start hex_field to 0
+
         for node in self.neighbours.keys():
             distances[node] = math.inf
         distances[start_hex] = 0
 
+        # Add all hex_fields to the unvisited set
+
         unvisited = set(self.neighbours.keys())
 
+        # Iterate unvisited set until it is empty
         while unvisited:
+
             # Select the node with the smallest distance
             current_node = min(unvisited, key=lambda node: distances[node])
-            distances = self.update_neighbour_distances(current_node, distances)
+            distance = self.update_neighbour_distances(current_node, distances)
             unvisited.remove(current_node)
 
-        return distances
+        return distance
 
     def update_neighbour_distances(self, current_node, distances):
 

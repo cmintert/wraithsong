@@ -1,12 +1,11 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem, QWidget, QVBoxLayout, QLabel, QHBoxLayout
-from PySide6.QtCore import Qt, QSize, QObject,Signal
-from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QPainter, QFont
-import math
-import sys
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QGraphicsTextItem,
+                               QGraphicsPixmapItem, QGraphicsPathItem, QWidget,
+                               QVBoxLayout, QLabel, QHBoxLayout, QMainWindow)
+from PySide6.QtCore import Qt, QSize, QObject, Signal
+from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QFont
 import gameobjects
-from map_logic import Hex, Graph, MoveCalculator
-from PySide6.QtGui import QFontDatabase, QFont
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow
+from map_logic import Hex
+
 
 PEN_COLOR_HOVER = "#979068"
 PEN_COLOR_DEFAULT = "#2b362b"
@@ -146,7 +145,7 @@ class HexMapVisualization(QGraphicsView):
         
         self.scene.addItem(label)
 
-    def show_move_distances(self, q, r):
+    def show_move_distances(self, q = 0, r = 0):
 
         hex_size = 80
 
@@ -167,7 +166,7 @@ class HexMapVisualization(QGraphicsView):
             label_distances.setPos(hex_x_coordinates - label_distances.boundingRect().width() / 2,
                              hex_y_coordinates - label_distances.boundingRect().height() -30)
             label_distances.setOpacity(1)
-            print(distances[hex_field])
+
             color = self.get_color_for_distance(distances[hex_field])
             label_distances.setDefaultTextColor(color)
 

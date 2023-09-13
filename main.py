@@ -42,20 +42,22 @@ edgemap = game.edgemap
 players = game.players
 
 
-hexmap.initialize_hex_map(-6, 6, -6, 6)
+hexmap.initialize_hex_map(-2, 1, -2, 1)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
-move_calculator = MoveCalculator(hexmap, edgemap)
-graph=Graph(move_calculator)
 
-graph.djikstra(Hex.hex_obj_from_string("7,-3"))
 
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(0), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
-edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+#edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(2), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(3), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(4), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
+edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(5), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
 
+
+
+move_calculator = MoveCalculator(hexmap, edgemap)
+graph=Graph(move_calculator)
 
 
 players.append("Player 1")

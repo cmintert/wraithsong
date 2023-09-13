@@ -1,10 +1,12 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsPixmapItem, QGraphicsPathItem, QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from PySide6.QtCore import Qt, QSize, QObject,Signal
-from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QPainter
+from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QPainter, QFont
 import math
 import sys
 import gameobjects
-from map_logic import Hex
+from map_logic import Hex, Graph, MoveCalculator
+from PySide6.QtGui import QFontDatabase, QFont
+from PySide6.QtWidgets import QApplication, QLabel, QMainWindow
 
 PEN_COLOR_HOVER = "#979068"
 PEN_COLOR_DEFAULT = "#2b362b"
@@ -40,14 +42,55 @@ class HoverableHexagon(QGraphicsPathItem):
         self.setZValue(0)
 
 class HexMapVisualization(QGraphicsView):
-    def __init__(self, hex_map, edge_map, parent_app=None):
+    def __init__(self, hex_map, edge_map, graph,parent_app=None):
         super().__init__()
         self.parent_app = parent_app
         self.hex_map = hex_map
         self.edge_map = edge_map
+        self.graph = graph
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.draw_map()
+
+    def interpolate_color(self, min_color, max_color, factor):
+        """
+        Interpolate between two QColor objects based on a factor.
+
+        :param min_color: Starting QColor
+        :param max_color: Ending QColor
+        :param factor: Value between 0 and 1 to interpolate colors
+        :return: Interpolated QColor
+        """
+        red = min_color.red() + factor * (max_color.red() - min_color.red())
+        green = min_color.green() + factor * (max_color.green() - min_color.green())
+        blue = min_color.blue() + factor * (max_color.blue() - min_color.blue())
+        return QColor(red, green, blue)
+
+    def get_color_for_distance(self, distance, min_distance=0, max_distance=4):
+        """
+        Get a color based on the distance value using a gradient from green to red.
+
+        :param distance: Distance value
+        :param min_distance: Minimum expected distance (corresponds to green)
+        :param max_distance: Maximum expected distance (corresponds to red)
+        :return: QColor for the specified distance
+        """
+        # Normalize distance to a factor between 0 and 1
+        # Normalize distance to a factor between 0 and 1
+        factor = (distance - min_distance) / (max_distance - min_distance)
+        factor = max(0, min(1, factor))  # Ensure factor is in [0, 1] range
+
+        # Determine the gradient segment and adjust the factor for the segment
+        if factor < 0.5:
+            start_color = QColor("green")
+            end_color = QColor("yellow")
+            factor = factor * 2  # Adjust factor for this segment
+        else:
+            start_color = QColor("yellow")
+            end_color = QColor("red")
+            factor = (factor - 0.5) * 2  # Adjust factor for this segment
+
+        return self.interpolate_color(start_color, end_color, factor)
 
     def draw_map(self):
 
@@ -59,7 +102,7 @@ class HexMapVisualization(QGraphicsView):
         for edge,game_objects in self.edge_map.edge_map.items():
             #check if the game object is a river and a terrain
             for game_object in game_objects:
-                if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":  
+                if isinstance(game_object, gameobjects.Terrain) and game_object.terrain_type == "river":
                     self.add_graphic_to_edge(edge, hex_size, "river.png")
 
     def draw_hex_terrain(self, hex, size):
@@ -81,6 +124,7 @@ class HexMapVisualization(QGraphicsView):
 
         hoverable_hex = HoverableHexagon(hex_path, hex)
         hoverable_hex.emitter.hex_hovered.connect(self.update_info_label)
+        hoverable_hex.emitter.hex_hovered.connect(self.show_move_distances)
         hoverable_hex.setPen(pen)
         self.scene.addItem(hoverable_hex)
 
@@ -92,11 +136,57 @@ class HexMapVisualization(QGraphicsView):
     def add_coordinate_labels(self, hex, size):
         hex_x_coordinates, hex_y_coordinates = hex.get_pixel_coordinates(size)
 
-        label = QGraphicsTextItem(f"({hex.q_axis}, {hex.r_axis})")
-        label.setPos(hex_x_coordinates - label.boundingRect().width() / 2,
+        label = QGraphicsTextItem(f"{hex.q_axis}, {hex.r_axis}")
+        label.setFont(QFont("Vinque Rg", 15))
+        label.setOpacity(0.6)
+
+        label.setPos(hex_x_coordinates - label.boundingRect().width()/2,
                      hex_y_coordinates - label.boundingRect().height()/2)
+
         
         self.scene.addItem(label)
+
+    def show_move_distances(self, q, r):
+
+        hex_size = 80
+
+        distances = self.graph.djikstra(Hex.hex_obj_from_string(f"{q},{r}"))
+
+        # Remove all distance labels from the scene
+        for item in self.scene.items():
+            if isinstance(item, QGraphicsTextItem) and getattr(item, "is_distance_label", False):
+                self.scene.removeItem(item)
+
+        # Iterate over the Hex Fields and add the distance labels
+        for hex_field in self.hex_map.hex_map.keys():
+
+            hex_x_coordinates, hex_y_coordinates = hex_field.get_pixel_coordinates(hex_size)
+
+            label_distances = QGraphicsTextItem(f"{distances[hex_field]}")
+            label_distances.setFont(QFont("Vinque Rg", 15))
+            label_distances.setPos(hex_x_coordinates - label_distances.boundingRect().width() / 2,
+                             hex_y_coordinates - label_distances.boundingRect().height() -30)
+            label_distances.setOpacity(1)
+            print(distances[hex_field])
+            color = self.get_color_for_distance(distances[hex_field])
+            label_distances.setDefaultTextColor(color)
+
+
+
+            # Draw a small circle below the label
+            circle_path = QPainterPath()
+            circle_path.addEllipse(label_distances.boundingRect().center(), 10, 10)
+            circle_item = QGraphicsPathItem(circle_path)
+            circle_item.setBrush(QColor("gray"))
+            circle_item.setPen(Qt.NoPen)
+            circle_item.setPos(label_distances.pos())
+
+            #Flag items as distance labels
+            circle_item.is_distance_label = True
+            label_distances.is_distance_label = True
+
+            self.scene.addItem(circle_item)
+            self.scene.addItem(label_distances)
 
     def add_graphic_to_hex(self, hex_field, size, asset="missing.png"):
 
@@ -105,9 +195,7 @@ class HexMapVisualization(QGraphicsView):
         # Create a scaled QPixmap object
 
         scale_factor = 2.33
-
         pixmap = QPixmap(f"assets/{asset}")
-
         scale_pixmap = pixmap.scaled(QSize(size * scale_factor, size * scale_factor), Qt.KeepAspectRatio,
                                      Qt.SmoothTransformation)
 
@@ -162,9 +250,9 @@ class HexMapVisualization(QGraphicsView):
 
 class HexMapApp(QMainWindow):
 
-    def __init__(self, hex_map, edge_map):
+    def __init__(self, hex_map, edge_map, graph):
         super().__init__()
-        self.map_area_widget = HexMapVisualization(hex_map, edge_map, self)
+        self.map_area_widget = HexMapVisualization(hex_map, edge_map, graph, self)
         self.map_area_widget.setStyleSheet("background-color: #B3B3B3;")
 
 

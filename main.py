@@ -42,7 +42,7 @@ edgemap = game.edgemap
 players = game.players
 
 
-hexmap.initialize_hex_map(-8, 8, -8, 8)
+hexmap.initialize_hex_map(-6, 6, -6, 6)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 move_calculator = MoveCalculator(hexmap, edgemap)
@@ -83,7 +83,7 @@ players.append("Player 2")
 
 app = QApplication(sys.argv)
 
-window = HexMapApp(hexmap, edgemap)
+window = HexMapApp(hexmap, edgemap, graph)
 window.show()
 
 sys.exit(app.exec())

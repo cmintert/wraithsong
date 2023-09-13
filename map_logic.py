@@ -758,7 +758,7 @@ class Graph:
             distances = self.update_neighbour_distances(current_node, distances)
             unvisited.remove(current_node)
 
-        print(f"Distances: {distances}")
+        return distances
 
     def update_neighbour_distances(self, current_node, distances):
 

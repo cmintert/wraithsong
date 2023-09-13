@@ -5,6 +5,7 @@ import json
 
 from gameobjects import Terrain
 
+
 class Hex:
     """
     A class representing a hexagon on a hexagonal grid.
@@ -15,7 +16,15 @@ class Hex:
         s_axis (int): The s-axis coordinate of the hexagon, calculated as -q_axis - r_axis.
     """
 
-    directions_axial = [(+1, -1), (+1, 0), (0, +1), (-1, +1), (-1, 0), (0, -1)]  # Clockwise from pointy-top
+    # Directions clockwise from pointy-top
+    directions_axial = [
+        (+1, -1),
+        (+1, 0),
+        (0, +1),
+        (-1, +1),
+        (-1, 0),
+        (0, -1),
+    ]
 
     def __init__(self, q_axis, r_axis):
         """
@@ -38,7 +47,7 @@ class Hex:
         Returns:
             int: The hash value of the Hex object.
         """
-        
+
         return hash((self.q_axis, self.r_axis, self.s_axis))
 
     def __eq__(self, other):
@@ -52,7 +61,11 @@ class Hex:
             bool: True if the Hex object is equal to the other object, False otherwise.
         """
         if isinstance(other, Hex):
-            return self.q_axis == other.q_axis and self.r_axis == other.r_axis and self.s_axis == other.s_axis
+            return (
+                self.q_axis == other.q_axis
+                and self.r_axis == other.r_axis
+                and self.s_axis == other.s_axis
+            )
         return False
 
     def __str__(self):
@@ -92,7 +105,7 @@ class Hex:
         Returns:
             tuple: A tuple containing the x-axis and y-axis coordinates of the center of the Hex object.
         """
-        
+
         x_axis = size * (3**0.5) * (self.q_axis + self.r_axis / 2)
         y_axis = size * 1.5 * self.r_axis
         return (x_axis, y_axis)
@@ -117,7 +130,12 @@ class Hex:
             angle_deg = (60 * corner_number - 90) % 360
             angle_rad = math.pi / 180 * angle_deg
 
-            corners.append((x_axis + size * math.cos(angle_rad), y_axis + size * math.sin(angle_rad)))
+            corners.append(
+                (
+                    x_axis + size * math.cos(angle_rad),
+                    y_axis + size * math.sin(angle_rad),
+                )
+            )
         return corners
 
     def get_edgecenter_pixel_coordinates(self, size):
@@ -138,11 +156,13 @@ class Hex:
         # Calculate the coordinates of the edge centers
         for i in range(len(corners)):
             x1, y1 = corners[i]
-            x2, y2 = corners[(i + 1) % 6]  # Loop back to the first corner after the last one
+            x2, y2 = corners[
+                (i + 1) % 6
+            ]  # Loop back to the first corner after the last one
             edge_centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
         return edge_centers
 
-    def get_edge_by_direction(self,direction):
+    def get_edge_by_direction(self, direction):
         """
         Returns the Edge object in the given direction from the Hex object.
 
@@ -152,13 +172,13 @@ class Hex:
         Returns:
             Edge: The Edge object in the given direction from the Hex object.
 
-        Raises: 
+        Raises:
             Value Error if direction is not between 0 and 5
         """
         if direction < 0 or direction > 5:
             raise ValueError("Direction must be between 0 and 5")
 
-        #as the the edges are generated in order we need to keep that order
+        # as the the edges are generated in order we need to keep that order
 
         neighbour_hex = Hex.get_neighbour_hex(self, direction)
         ordered_hex_pair = Hex.ordered_hex_pair(self, neighbour_hex)
@@ -179,7 +199,9 @@ class Hex:
         Returns:
             tuple: A tuple of Hex objects in a consistent order.
         """
-        if hex1.q_axis < hex2.q_axis or (hex1.q_axis == hex2.q_axis and hex1.r_axis < hex2.r_axis):
+        if hex1.q_axis < hex2.q_axis or (
+            hex1.q_axis == hex2.q_axis and hex1.r_axis < hex2.r_axis
+        ):
             return (hex1, hex2)
         return (hex2, hex1)
 
@@ -188,7 +210,7 @@ class Hex:
         """
         Returns the direction from one Hex object to another.
 
-        The directions are from 0 to 5 in a clockwise order, representing NE E SE SW W NW. 
+        The directions are from 0 to 5 in a clockwise order, representing NE E SE SW W NW.
 
         Args:
             hex_field_1 (Hex): The first Hex object.
@@ -196,7 +218,7 @@ class Hex:
 
         Returns:
             int: The direction from hex_field_1 to hex_field_2, between 0 and 5.
-        
+
         Raises: ValueError if the hexes are not direct neighbors
         """
         # Determine the direction from hex1 to hex2. They have to be direct neighbors.
@@ -216,7 +238,7 @@ class Hex:
             return 4  # West
         elif delta_q == 0 and delta_r == -1:
             return 5  # North-West
-        
+
         raise ValueError("The hexes are not direct neighbors")
 
     @classmethod
@@ -231,8 +253,10 @@ class Hex:
         Returns:
             Hex: The Hex object in the given direction from the starting Hex object.
         """
-        neighbour_hex = Hex(hex_field.q_axis + cls.directions_axial[direction][0],
-                            hex_field.r_axis + cls.directions_axial[direction][1])
+        neighbour_hex = Hex(
+            hex_field.q_axis + cls.directions_axial[direction][0],
+            hex_field.r_axis + cls.directions_axial[direction][1],
+        )
         return neighbour_hex
 
     @classmethod
@@ -249,7 +273,7 @@ class Hex:
         Raises:
             ValueError: If the string is not in the correct format.
         """
-        #Check if the string looks like a hex coordinate using a simple regex
+        # Check if the string looks like a hex coordinate using a simple regex
         if not re.match(r"^(-?\d+),(-?\d+)$", string):
             raise ValueError("The string is not in the correct format q,r ")
 
@@ -258,41 +282,44 @@ class Hex:
 
 class Edge:
     """
-    Defines an edge between two hexes. The hexes are ordered in the Edge object to keep the direction consistent. 
+    Defines an edge between two hexes. The hexes are ordered in the Edge object to keep the direction consistent.
     Two hexes are used to define the position of the edge to quickly access the hexes from the edge.
-    
-    The spawn_hex is the hex from which the edge is spawned. The spawn hex is not necessarily the first hex in the edge. 
+
+    The spawn_hex is the hex from which the edge is spawned. The spawn hex is not necessarily the first hex in the edge.
 
     The spawn_direction is the direction of the edge from the spawn_hex.
-    
+
     Args:
 
         hex_field_1 (Hex): The first hex of the edge
         hex_field_2 (Hex): The second hex of the edge
         spawn_direction (int): The direction to spwan the edge from the spawn_hex
-    
+
     Methods:
 
         get_hex_fields: Returns the hexes of the edge in a tuple
     """
-    def __init__(self, hex_field_1, hex_field_2,spawn_direction):
+
+    def __init__(self, hex_field_1, hex_field_2, spawn_direction):
         """
         Initializes a Edge object with the given hexes and direction.
 
         Args:
             hex_field_1 (Hex): The first hex of the edge
             hex_field_2 (Hex): The second hex of the edge
-            spawn_direction (int): The direction to spwan the edge from the spawn_hex    
-        """    
+            spawn_direction (int): The direction to spwan the edge from the spawn_hex
+        """
         self.spawn_hex = hex_field_1
         self.spawn_direction = spawn_direction
-        self.hex_field_1, self.hex_field_2 = Hex.ordered_hex_pair(hex_field_1, hex_field_2)
-    
-    def __hash__(self): 
+        self.hex_field_1, self.hex_field_2 = Hex.ordered_hex_pair(
+            hex_field_1, hex_field_2
+        )
+
+    def __hash__(self):
         """
         Returns the hash value of the Edge object.
 
-        Returns:    
+        Returns:
             int: The hash value of the Edge object.
         """
         return hash((self.hex_field_1, self.hex_field_2))
@@ -302,10 +329,13 @@ class Edge:
         Checks if the Edge object is equal to another edge object by comparing the hex objects and direction.
 
         Args:
-            other (object): The edge object to compare with. 
+            other (object): The edge object to compare with.
         """
         if isinstance(other, Edge):
-            return self.hex_field_1 == other.hex_field_1 and self.hex_field_2 == other.hex_field_2
+            return (
+                self.hex_field_1 == other.hex_field_1
+                and self.hex_field_2 == other.hex_field_2
+            )
         return False
 
     def __str__(self):
@@ -324,7 +354,7 @@ class Edge:
         The tuple is ordered by the axis coordinates of the hexes from top to bottom and left to right.
 
         Returns:
-            tuple: A tuple containing the two hexes of the edge. 
+            tuple: A tuple containing the two hexes of the edge.
         """
         return (self.hex_field_1, self.hex_field_2)
 
@@ -444,7 +474,7 @@ class HexMap:
         """
         Prints the content of all hexagonal fields in the map.
         """
-        for hex_field,game_objects in self.hex_map.items():
+        for hex_field, game_objects in self.hex_map.items():
             print(hex_field)
             for game_object in game_objects:
                 print(game_object)
@@ -457,11 +487,10 @@ class HexMap:
         - game: the game object to generate terrain game objects for
         """
         for hex_field in self.hex_map.keys():
-
-            #open terrain.json and read the terrain types
+            # open terrain.json and read the terrain types
             with open("terrain.json", "r") as file:
                 terrain_data = json.load(file)
-            
+
             terrain_types = []
             for terrain_type, terrain_data in terrain_data["terrain"].items():
                 if "edgeobject" not in terrain_data:
@@ -469,12 +498,15 @@ class HexMap:
 
             choice = random.choice(terrain_types)
 
-            self.append_object_to_hex(hex_field, Terrain(game.object_id_generator, "Generated_Terrain", choice))
+            self.append_object_to_hex(
+                hex_field,
+                Terrain(game.object_id_generator, "Generated_Terrain", choice),
+            )
 
 
 class EdgeMap:
     """
-    A class representing a map of edges between hexagonal fields. 
+    A class representing a map of edges between hexagonal fields.
 
     Attributes:
         edge_map: a dictionary containing the map of edges
@@ -485,8 +517,9 @@ class EdgeMap:
         get_edge_object_list: gets the list of game objects in an edge
         has_terrain: checks if an edge has a terrain game object
         print_content_of_all_edges: prints the content of all edges in the map
-    
+
     """
+
     def __init__(self):
         """
         Initializes an empty edge map.
@@ -503,12 +536,17 @@ class EdgeMap:
         for hex_field in hex_map.keys():
             for direction in range(6):
                 neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
-                if Edge(hex_field, neighbour_hex, direction) not in self.edge_map.keys():
-                    self.edge_map.update({Edge(hex_field, neighbour_hex,direction): []})
+                if (
+                    Edge(hex_field, neighbour_hex, direction)
+                    not in self.edge_map.keys()
+                ):
+                    self.edge_map.update(
+                        {Edge(hex_field, neighbour_hex, direction): []}
+                    )
 
     def append_object_to_edge(self, edge, game_object):
         """
-        Appends a game object to an edge. 
+        Appends a game object to an edge.
 
         Args:
             edge: the edge to append the game object to
@@ -539,19 +577,19 @@ class EdgeMap:
         return self.edge_map[edge]
 
     def has_terrain(self, edge):
-            """
-            Determines if an edge has any Terrain objects.
+        """
+        Determines if an edge has any Terrain objects.
 
-            Args:
-                edge (tuple): A tuple representing the edge to check.
+        Args:
+            edge (tuple): A tuple representing the edge to check.
 
-            Returns:
-                bool: True if the edge has at least one Terrain object, False otherwise.
-            """
-            for game_object in self.edge_map[edge]:
-                if isinstance(game_object, Terrain):
-                    return True
-            return False
+        Returns:
+            bool: True if the edge has at least one Terrain object, False otherwise.
+        """
+        for game_object in self.edge_map[edge]:
+            if isinstance(game_object, Terrain):
+                return True
+        return False
 
     def print_content_of_all_edges(self):
         """
@@ -563,6 +601,7 @@ class EdgeMap:
             for game_object in game_objects:
                 print(game_object)
         print(f"There are {len(self.edge_map)} edges in the edge map")
+
 
 class MoveCalculator:
 
@@ -586,7 +625,6 @@ class MoveCalculator:
         self.edge_map = edge_map
 
     def get_neighbours(self, hex_field):
-
         neighbours = []
 
         for direction in range(6):
@@ -597,7 +635,6 @@ class MoveCalculator:
         return neighbours
 
     def get_neighbour_conditions(self, hex_field):
-
         condition_list = []
 
         valid_directions = []
@@ -608,43 +645,46 @@ class MoveCalculator:
                 valid_directions.append(direction)
 
         for direction in valid_directions:
-            
             movement_cost = self.get_movement_cost(hex_field, direction)
             movement_conditions = self.get_movement_conditions(hex_field, direction)
             move_target = Hex.get_neighbour_hex(hex_field, direction)
-            condition_list.append((hex_field, direction, move_target, movement_cost, movement_conditions))
-           
+            condition_list.append(
+                (hex_field, direction, move_target, movement_cost, movement_conditions)
+            )
+
         return condition_list
-    
+
     def get_movement_cost(self, hex_field, direction):
         """
         Returns the movement cost for a neighbor in a given direction.
-        
+
         Args:
             hex_field: A HexField instance representing the hex field to get neighbors for.
             direction: An integer representing the direction of the neighbor.
-            
+
             Returns:
             An integer representing the movement cost of the neighbor in the given direction.
         """
-        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
+        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
+            hex_field, direction
+        )
 
         for game_object in hex_objects:
             if isinstance(game_object, Terrain):
                 movement_cost = game_object.movement_cost
-        
+
         for game_object in edge_objects:
             if isinstance(game_object, Terrain):
                 movement_cost += game_object.movement_cost
 
         return movement_cost
-    
-    def get_movement_conditions(self, hex_field, direction):
 
+    def get_movement_conditions(self, hex_field, direction):
         conditions = []
 
-
-        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(hex_field, direction)
+        hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
+            hex_field, direction
+        )
 
         for game_object in hex_objects:
             if isinstance(game_object, Terrain):
@@ -655,44 +695,41 @@ class MoveCalculator:
             if isinstance(game_object, Terrain):
                 if hasattr(game_object, "terrain_condition"):
                     conditions.append(game_object.terrain_condition)
-        
-        return conditions
-    
-    def neighbouring_hex_and_edge_objects(self, hex_field,direction):
 
+        return conditions
+
+    def neighbouring_hex_and_edge_objects(self, hex_field, direction):
         neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
 
         if self.hex_map.hex_exists(hex_field):
             hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
-            edge_objects = self.edge_map.get_edge_object_list(hex_field.get_edge_by_direction(direction))
+            edge_objects = self.edge_map.get_edge_object_list(
+                hex_field.get_edge_by_direction(direction)
+            )
 
             return hex_objects, edge_objects
-        else :
-            return [],[]
+        else:
+            return [], []
 
     def collect_neighbours_for_all(self):
-        
         all_nodes = self.collect_all_nodes()
         neighbour_list = {}
 
         for node in all_nodes:
-
             neighbours = self.get_neighbours(node)
             neighbour_list.update({node: neighbours})
 
         return neighbour_list
 
     def collect_all_nodes(self):
-
         all_nodes = []
 
         for hex_field in self.hex_map.hex_map.keys():
             all_nodes.append(hex_field)
 
         return all_nodes
-    
-    def collect_move_paths(self):
 
+    def collect_move_paths(self):
         all_move_paths = []
 
         all_nodes = self.collect_all_nodes()
@@ -700,18 +737,16 @@ class MoveCalculator:
         print(f"How many nodes? {len(all_nodes)}")
 
         for node in all_nodes:
-
             paths = self.get_neighbour_conditions(node)
 
             for path in paths:
                 all_move_paths.append(path)
 
         return all_move_paths
-    
-class Graph:
-        
-    def __init__(self, move_calculator):
 
+
+class Graph:
+    def __init__(self, move_calculator):
         print("Initializing graph")
 
         self.edges = move_calculator.collect_move_paths()
@@ -719,13 +754,11 @@ class Graph:
         self.nodes = move_calculator.collect_all_nodes()
 
     def get_movement_cost(self, node1, node2):
-
         for item in self.edges:
             if item[0] == node1 and item[2] == node2:
                 return item[3]
 
-    def djikstra(self,start_hex):
-
+    def djikstra(self, start_hex):
         distances = {}
 
         # Set all distances to infinity and start hex_field to 0
@@ -740,7 +773,6 @@ class Graph:
 
         # Iterate unvisited set until it is empty
         while unvisited:
-
             # Select the node with the smallest distance
             current_node = min(unvisited, key=lambda node: distances[node])
             distance = self.update_neighbour_distances(current_node, distances)
@@ -749,10 +781,11 @@ class Graph:
         return distance
 
     def update_neighbour_distances(self, current_node, distances):
-
         for neighbour in self.neighbours[current_node]:
             if neighbour in distances:
-                new_distance = distances[current_node] + self.get_movement_cost(current_node, neighbour)
+                new_distance = distances[current_node] + self.get_movement_cost(
+                    current_node, neighbour
+                )
 
                 if new_distance < distances[neighbour]:
                     distances[neighbour] = new_distance

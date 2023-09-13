@@ -2,11 +2,12 @@ import json
 import uuid
 import random
 
+
 class ObjectIDGenerator:
     """Manages the generation of unique object IDs.
 
-    This class provides functionality to generate unique IDs based on a combination of 
-    an object type, a name, and a random counter. The uniqueness of IDs is ensured within 
+    This class provides functionality to generate unique IDs based on a combination of
+    an object type, a name, and a random counter. The uniqueness of IDs is ensured within
     the context of a single instance of the `ObjectIDGenerator` class.
 
     Attributes:
@@ -16,6 +17,7 @@ class ObjectIDGenerator:
         get_random_counter: Generates a random 4-digit counter.
         get_unique_id: Generates a unique ID based on the provided name and object type.
     """
+
     def __init__(self):
         self.used_counters = set()
 
@@ -33,16 +35,16 @@ class ObjectIDGenerator:
         """Generates a unique ID based on the provided name and object type.
 
         The generated ID is in the format: `<First 3 letters of object_type>_<name>_<random counter>`.
-        This method ensures the uniqueness of the ID within the context of the current instance of 
+        This method ensures the uniqueness of the ID within the context of the current instance of
         the `ObjectIDGenerator` class.
 
         Args:
             name (str): The name to be included in the ID.
             object_type (str): The type of the object for which the ID is being generated.
-        
+
         Returns:
             str: A unique ID.
-        """        
+        """
 
         while True:
             random_counter = self.get_random_counter()
@@ -51,11 +53,12 @@ class ObjectIDGenerator:
                 self.used_counters.add(unique_id)
                 return unique_id
 
+
 class GameObject:
     """
     Represents a generic game object with unique identifiers and attributes.
 
-    Each game object has a unique `object_id` generated using the provided `id_generator` 
+    Each game object has a unique `object_id` generated using the provided `id_generator`
     as well as a universally unique identifier (`internal_id`).
 
     Attributes:
@@ -69,12 +72,12 @@ class GameObject:
         name (str, optional): The name of the game object. Defaults to "Not specified".
         object_type (str, optional): The type or category of the game object. Defaults to None.
     """
+
     def __init__(self, id_generator, name="Not specified", object_type=None):
         self.object_id = id_generator.get_unique_id(name, object_type)
         self.internal_id = str(uuid.uuid4())
         self.name = name
         self.object_type = object_type
-
 
     def __str__(self):
         """
@@ -94,7 +97,7 @@ class GameObject:
         """
         return self.internal_id
 
-    def get_position(self,hexmap):
+    def get_position(self, hexmap):
         """
         Retrieves the position of the game object in the provided hex map.
 
@@ -110,7 +113,7 @@ class GameObject:
                 return hex_field
         return None
 
-    def  delete(self,id_generator):
+    def delete(self, id_generator):
         """
         Deletes the game object and removes its unique ID from the used counters of the id_generator.
 
@@ -125,14 +128,14 @@ class Terrain(GameObject):
     """
     Represents a terrain type in the game, inheriting properties from the GameObject class.
 
-    The Terrain class describes a specific type of terrain, such as a forest or mountain, 
-    with additional attributes loaded dynamically from a "terrain.json" file based on the 
+    The Terrain class describes a specific type of terrain, such as a forest or mountain,
+    with additional attributes loaded dynamically from a "terrain.json" file based on the
     provided `terrain_type`.
 
     Attributes:
         terrain_type (str): The specific type of the terrain (e.g., "forest", "mountain").
         elevation (int): The elevation level of the terrain.
-        [dynamic attributes]: Attributes loaded dynamically from the "terrain.json" file 
+        [dynamic attributes]: Attributes loaded dynamically from the "terrain.json" file
                               based on the provided `terrain_type`.
 
     Args:
@@ -142,7 +145,7 @@ class Terrain(GameObject):
         elevation (int, optional): The elevation level of the terrain. Defaults to 0.
     """
 
-    def __init__(self,id_generator, name, terrain_type, elevation=0):
+    def __init__(self, id_generator, name, terrain_type, elevation=0):
         super().__init__(id_generator, name, object_type="terrain")
 
         self.terrain_type = terrain_type
@@ -151,7 +154,7 @@ class Terrain(GameObject):
         with open("terrain.json", "r") as file:
             terrain_data = json.load(file)
 
-        #get all the attributes listed under "terrain" in the json file
+        # get all the attributes listed under "terrain" in the json file
         attributes = terrain_data["terrain"].get(terrain_type, {})
 
         for key, value in attributes.items():
@@ -166,12 +169,15 @@ class Terrain(GameObject):
         Returns:
             str: A string representation of the terrain object.
         """
-        attributes = [f"{key}: {getattr(self, key)}" for key in vars(self)
-                      if key not in ["internal_id", "name", "object_type"]]
+        attributes = [
+            f"{key}: {getattr(self, key)}"
+            for key in vars(self)
+            if key not in ["internal_id", "name", "object_type"]
+        ]
         return super().__str__() + ", " + ", ".join(attributes)
 
-class Army(GameObject):
 
+class Army(GameObject):
     def __init__(self, id_generator, name, owner):
         super().__init__(id_generator, name, object_type="army")
 
@@ -179,8 +185,11 @@ class Army(GameObject):
         self.units = []
 
     def __str__(self):
-        attributes = [f"{key}: {getattr(self, key)}" for key in vars(self)
-                      if key not in ["internal_id", "name", "object_type"]]
+        attributes = [
+            f"{key}: {getattr(self, key)}"
+            for key in vars(self)
+            if key not in ["internal_id", "name", "object_type"]
+        ]
         return super().__str__() + ", " + ", ".join(attributes)
 
     def add_unit_to_army(self, unit):
@@ -195,7 +204,6 @@ class Army(GameObject):
         hexmap.hex_map[target_hex].append(self)
 
 
-class   Unit(GameObject):
-
+class Unit(GameObject):
     def __init__(self, id_generator, name, owner):
         super().__init__(id_generator, name, object_type="unit")

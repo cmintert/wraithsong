@@ -28,3 +28,7 @@ A
 :
 
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
+;
+qodana.yaml,8\5\85c3a901608a6b9adf48d245fa84828b66304e51
+<
+terrain.json,7\2\72d1ccb5a9e9327dbc3693ee2efe5fe4b2f13a21

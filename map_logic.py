@@ -1,7 +1,7 @@
+import json
 import math
 import random
 import re
-import json
 
 from gameobjects import Terrain
 
@@ -30,7 +30,8 @@ class Hex:
         """
         Initializes a Hex object with the given q-axis and r-axis coordinates.
 
-        q-axis and r-axis are the coordinates of the hexagon on the hexagonal grid. The s-axis coordinate is calculated as -q_axis - r_axis.
+        q-axis and r-axis are the coordinates of the hexagon on the hexagonal grid.
+        The s-axis coordinate is calculated as -q_axis - r_axis.
 
         Args:
             q_axis (int): The q-axis coordinate of the hexagon.
@@ -97,13 +98,30 @@ class Hex:
 
     def get_pixel_coordinates(self, size):
         """
-        Returns the pixel coordinates of the center of the Hex object.
+        Convert hexagonal coordinates to pixel coordinates.
+
+        Given a hex size, this method calculates the pixel coordinates (x, y)
+        corresponding to the hex's axial coordinates (q, r).
 
         Args:
-            size (int): The size of the Hex object. Size is the outer radius of the hexagon.
+            size (float): The size of the hex, which may represent the hex's radius
+                          or the distance from the center to a corner.
 
         Returns:
-            tuple: A tuple containing the x-axis and y-axis coordinates of the center of the Hex object.
+            tuple(float, float): A tuple containing the x and y pixel coordinates
+                                 corresponding to the hex's axial coordinates.
+
+        Notes:
+            - The method uses the axial coordinate system for hexagonal grids,
+              where each hex has two coordinates: q (column) and r (row).
+            - The formulae used in the method are standard for converting hexagonal
+              coordinates to a 2D Cartesian coordinate system.
+
+        Example:
+            >>> hex_instance = Hex(1, 2)  # Assuming axial coordinates (1, 2) and the class is named Hex
+            >>> pixel_coords = hex_instance.get_pixel_coordinates(10)
+            >>> print(pixel_coords)
+            (x_value, y_value)
         """
 
         x_axis = size * (3**0.5) * (self.q_axis + self.r_axis / 2)
@@ -112,16 +130,36 @@ class Hex:
 
     def get_cornerpixel_coordinates(self, size):
         """
-        Returns the pixel coordinates of the corners of the Hex object.
+        Calculate the pixel coordinates of the six corners of a hexagon.
 
-        The return list of tuples is ordered clockwise, starting from the topmost corner.
+        Given the center coordinates of a hexagon and its size, this code snippet calculates
+        the pixel coordinates of all six corners of the hexagon. The coordinates are
+        calculated based on a 60-degree separation between each corner, starting from
+        a vertical line (which is why we subtract 90 degrees).
 
-        Args:
-            size (int): The size of the Hex object. Size is the outer radius of the hexagon.
+        Attributes:
+            x_axis (float): The x-coordinate of the hexagon's center.
+            y_axis (float): The y-coordinate of the hexagon's center.
+            size (float): The distance from the center of the hexagon to any of its corners.
 
         Returns:
-            list: A list of tuples containing the x-axis and y-axis coordinates of the six corners of the Hex object.
+            list[tuple]: A list of tuples where each tuple contains the (x, y) coordinates
+                         of a corner of the hexagon.
+
+        Example:
+            Assuming this code is a method inside a class, and the class instance has a
+            method called `get_pixel_coordinates`:
+
+            >>> hex_instance = HexClass()  # Assuming the class is named HexClass
+            >>> corners = hex_instance.method_name(10)  # Replace method_name with actual method name
+            >>> print(corners)
+            [(x1, y1), (x2, y2), ...]
+
+        Notes:
+            The formula used in the snippet to calculate the angle in degrees is based on
+            the hexagonal symmetry, where each corner is 60 degrees apart from the next.
         """
+
         x_axis, y_axis = self.get_pixel_coordinates(size)
 
         # Calculate the pixel corner points for the hex
@@ -479,25 +517,84 @@ class HexMap:
             for game_object in game_objects:
                 print(game_object)
 
-    def fill_map_with_terrain(self, game):
+    def load_terrain_data(self):
         """
-        Fills the hexagonal map with randomly generated terrain game objects.
+        Loads the terrain data from JSON file.
+        """
+        with open("terrain.json", "r") as file:
+            terrain_data = json.load(file)
+
+        return terrain_data
+
+    def filter_terrain_types(self, terrain_data):
+        """
+            Filter and return terrain types that do not have an "edgeobject" key.
+
+        This method examines the terrain data and returns a list of terrain types
+        where the associated data does not contain the "edgeobject" key.
 
         Args:
-        - game: the game object to generate terrain game objects for
+            terrain_data (dict): A dictionary containing terrain types as keys and their
+                                 associated data as values. The data for each terrain type is
+                                 another dictionary which may or may not contain the "edgeobject" key.
+
+        Returns:
+            list[str]: A list of terrain types that do not have the "edgeobject" key in their data.
+
+        Example:
+            >>> sample_data = {
+            ...     "terrain": {
+            ...         "mountain": {"color": "gray", "edgeobject": True},
+            ...         "forest": {"color": "green"}
+            ...     }
+            ... }
+            >>> result = obj.filter_terrain_types(sample_data)
+            >>> print(result)
+            ['forest']
+
+        Notes:
+            The method expects the terrain_data dictionary to have a "terrain" key, under which
+            all the terrain types and their data are nested.
         """
+        return [
+            terrain_type
+            for terrain_type, data in terrain_data["terrain"].items()
+            if "edgeobject" not in data
+        ]
+
+    def fill_map_with_terrain(self, game):
+        """
+        Populate the map with random terrain types.
+
+        This method loads the available terrain data and filters out terrain types
+        that have the "edgeobject" key. It then populates each hex field on the map
+        with a random choice of the filtered terrain types.
+
+        Args:
+            game (Game): An instance of the game object, which may contain utilities
+                         or services such as an object ID generator.
+
+        Side Effects:
+            Each hex field in the hex map will be populated with a terrain object.
+            The method modifies the internal state of the hex map by adding terrain objects to it.
+
+        Notes:
+            - The method relies on other methods like `load_terrain_data`, `filter_terrain_types`,
+              and `append_object_to_hex` to perform its operations.
+            - It's assumed that `game.object_id_generator` can be used to generate unique IDs
+              for game objects.
+            - The generated terrain object has a default name "Generated_Terrain".
+
+        Example:
+            >>> game_instance = Game()
+            >>> map_obj = HexMap()  # Assuming the class is named MapClass
+            >>> map_obj.fill_map_with_terrain(game_instance)
+        """
+        terrain_data = self.load_terrain_data()
+        terrain_types = self.filter_terrain_types(terrain_data)
+
         for hex_field in self.hex_map.keys():
-            # open terrain.json and read the terrain types
-            with open("terrain.json", "r") as file:
-                terrain_data = json.load(file)
-
-            terrain_types = []
-            for terrain_type, terrain_data in terrain_data["terrain"].items():
-                if "edgeobject" not in terrain_data:
-                    terrain_types.append(terrain_type)
-
             choice = random.choice(terrain_types)
-
             self.append_object_to_hex(
                 hex_field,
                 Terrain(game.object_id_generator, "Generated_Terrain", choice),
@@ -625,6 +722,29 @@ class MoveCalculator:
         self.edge_map = edge_map
 
     def get_neighbours(self, hex_field):
+        """
+        Get a list of valid neighboring hexes for the given hex field.
+
+        The method identifies and returns all neighboring hexes in valid directions
+        from the provided hex field. A direction is considered valid if a neighboring
+        hex exists in that direction.
+
+        Args:
+            hex_field (Hex): The hex field for which we want to find the neighbors.
+
+        Returns:
+            list[Hex]: A list of Hex objects representing the neighboring hexes.
+
+        Example:
+            >>> neighbours = obj.get_neighbours(some_hex_field)
+            >>> print(neighbours)
+            [<Hex object at 0x...>, <Hex object at 0x...>, ...]
+
+        Notes:
+            The method relies on other methods like `hex_map.hex_exists` and
+            `Hex.get_neighbour_hex` to determine the neighboring hexes.
+        """
+
         neighbours = []
 
         for direction in range(6):
@@ -635,6 +755,33 @@ class MoveCalculator:
         return neighbours
 
     def get_neighbour_conditions(self, hex_field):
+        """
+        Get a list of valid conditions for neighboring hexes of the given hex field.
+
+        The method calculates the movement cost and conditions for each valid direction
+        from the given hex field. A valid direction is one where a neighboring hex exists.
+
+        Args:
+            hex_field (Hex): The hex field for which we want to find the neighbor conditions.
+
+        Returns:
+            list[tuple]: A list of tuples, where each tuple contains:
+                - hex_field (Hex): The original hex field.
+                - direction (int): The direction of the neighboring hex (0-5).
+                - move_target (Hex): The neighboring hex in the specified direction.
+                - movement_cost (int): The cost of moving to the neighboring hex.
+                - movement_conditions (list): List of conditions needed to move to the neighboring hex.
+
+        Example:
+            >>> conditions = obj.get_neighbour_conditions(some_hex_field)
+            >>> print(conditions)
+            [(<Hex object>, 0, <Hex object>, 5, ['condition1', 'condition2']), ...]
+
+        Notes:
+            The method relies on other methods like `hex_map.hex_exists`, `get_movement_cost`,
+            `get_movement_conditions`, and `Hex.get_neighbour_hex` to perform its operations.
+        """
+
         condition_list = []
 
         valid_directions = []
@@ -656,62 +803,156 @@ class MoveCalculator:
 
     def get_movement_cost(self, hex_field, direction):
         """
-        Returns the movement cost for a neighbor in a given direction.
+        Calculate the movement cost for moving in a specified direction from a given hex field.
+
+        This method determines the movement cost based on the `Terrain` objects present
+        in the specified direction from the given hex field. It accumulates the movement costs
+        of the terrain objects in both the target hex and any terrain objects on the edge
+        between the current and target hex.
 
         Args:
-            hex_field: A HexField instance representing the hex field to get neighbors for.
-            direction: An integer representing the direction of the neighbor.
+            hex_field (Hex): The starting hex field from which we want to determine
+                             the movement cost.
+            direction (int): The direction (0-5) in which we want to move.
 
-            Returns:
-            An integer representing the movement cost of the neighbor in the given direction.
+        Returns:
+            int: The total movement cost for moving in the specified direction
+                 from the given hex field.
+
+        Notes:
+            - The method relies on the `neighbouring_hex_and_edge_objects` method
+              to get the neighboring hex and edge objects.
+            - The movement costs of all `Terrain` objects in the hex and on the edge
+              are accumulated to calculate the total cost.
+
+        Example:
+            >>> hex_instance = Hex()
+            >>> cost = hex_instance.get_movement_cost(some_hex_field, 2)
+            >>> print(cost)
+            7
         """
+
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
             hex_field, direction
         )
+        summed_movement_cost = 0
 
-        for game_object in hex_objects:
+        for game_object in hex_objects + edge_objects:
             if isinstance(game_object, Terrain):
-                movement_cost = game_object.movement_cost
+                summed_movement_cost += game_object.movement_cost
 
-        for game_object in edge_objects:
-            if isinstance(game_object, Terrain):
-                movement_cost += game_object.movement_cost
-
-        return movement_cost
+        return summed_movement_cost
 
     def get_movement_conditions(self, hex_field, direction):
-        conditions = []
+        """
+        Retrieve movement conditions for a given direction from a specified hex field.
+
+        This method extracts the movement conditions from `Terrain` objects present
+        in the specified direction from the given hex field. It gathers conditions
+        from the terrain objects in both the target hex and any terrain objects on the edge
+        between the current and target hex.
+
+        Args:
+            hex_field (Hex): The starting hex field from which we want to extract
+                             the movement conditions.
+            direction (int): The direction (0-5) in which we want to check the conditions.
+
+        Returns:
+            list[str]: A list of movement conditions derived from the `Terrain` objects
+                       in the specified direction from the hex field.
+
+        Notes:
+            - The method relies on the `neighbouring_hex_and_edge_objects` method
+              to get the neighboring hex and edge objects.
+            - Only `Terrain` objects that have a "terrain_condition" attribute will
+              be considered.
+
+        Example:
+            >>> hex_instance = HexFieldClass()  # Assuming the class is named HexFieldClass
+            >>> conditions = hex_instance.get_movement_conditions(some_hex_field, 2)
+            >>> print(conditions)
+            ['condition1', 'condition2', ...]
+        """
 
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
             hex_field, direction
         )
 
-        for game_object in hex_objects:
-            if isinstance(game_object, Terrain):
-                if hasattr(game_object, "terrain_condition"):
-                    conditions.append(game_object.terrain_condition)
-
-        for game_object in edge_objects:
-            if isinstance(game_object, Terrain):
-                if hasattr(game_object, "terrain_condition"):
-                    conditions.append(game_object.terrain_condition)
+        conditions = [
+            game_object.terrain_condition
+            for game_object in hex_objects + edge_objects
+            if isinstance(game_object, Terrain)
+            and hasattr(game_object, "terrain_condition")
+        ]
 
         return conditions
 
     def neighbouring_hex_and_edge_objects(self, hex_field, direction):
-        neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+        """
+        Retrieve objects from the neighboring hex and its edge based on a given direction.
 
-        if self.hex_map.hex_exists(hex_field):
-            hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
-            edge_objects = self.edge_map.get_edge_object_list(
-                hex_field.get_edge_by_direction(direction)
-            )
+        Given a hex field and a direction, this method returns the objects present
+        in the neighboring hex and the objects present on the edge between the current
+        hex and its neighbor.
 
-            return hex_objects, edge_objects
-        else:
+        Args:
+            hex_field (Hex): The hex field from which the neighboring objects are to be retrieved.
+            direction (int): The direction (0-5) in which we want to retrieve the objects.
+
+        Returns:
+            tuple(list, list): A tuple containing two lists:
+                - The first list contains objects present in the neighboring hex.
+                - The second list contains objects present on the edge between the current
+                  hex and its neighbor.
+
+        Notes:
+            - The method relies on other methods like `hex_map.hex_exists`, `hex_map.get_hex_object_list`,
+              and `edge_map.get_edge_object_list` to perform its operations.
+            - If the hex doesn't exist in the map, two empty lists are returned.
+
+        Example:
+            >>> hex_instance = Hex()  # Assuming the class is named HexFieldClass
+            >>> hex_objects, edge_objects = hex_instance.neighbouring_hex_and_edge_objects(some_hex_field, 2)
+            >>> print(hex_objects, edge_objects)
+            [<GameObject1>, <GameObject2>, ...], [<EdgeObject1>, <EdgeObject2>, ...]
+        """
+
+        # Return empty lists if the hex doesn't exist in the map.
+        if not self.hex_map.hex_exists(hex_field):
             return [], []
 
+        neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+        hex_objects = self.hex_map.get_hex_object_list(neighbour_hex)
+        edge_objects = self.edge_map.get_edge_object_list(
+            hex_field.get_edge_by_direction(direction)
+        )
+
+        return hex_objects, edge_objects
+
     def collect_neighbours_for_all(self):
+        """
+        Collect the neighbouring nodes for all nodes in the system.
+
+        This method iterates through all nodes in the system and determines their
+        respective neighbours. The results are returned as a dictionary where each key
+        is a node and its value is a list of its neighbouring nodes.
+
+        Returns:
+            dict: A dictionary where each key is a node and the corresponding value
+                  is a list of its neighbouring nodes.
+
+        Notes:
+            - The method relies on other methods like `collect_all_nodes` and `get_neighbours`
+              to perform its operations.
+            - If a node doesn't have any neighbours, it will still be included in the returned
+              dictionary with an empty list as its value.
+
+        Example:
+            >>> neighbours = MoveCalculator_instance.collect_neighbours_for_all()
+            >>> print(neighbours)
+            {<Node1>: [<Neighbour1>, <Neighbour2>, ...], <Node2>: [<Neighbour3>, ...], ...}
+        """
+
         all_nodes = self.collect_all_nodes()
         neighbour_list = {}
 
@@ -722,6 +963,26 @@ class MoveCalculator:
         return neighbour_list
 
     def collect_all_nodes(self):
+        """
+        Collect all nodes (hex fields) present in the hex map.
+
+        This method retrieves all the nodes, or hex fields, from the system's hex map
+        and returns them in a list.
+
+        Returns:
+            list: A list containing all nodes (hex fields) present in the system's hex map.
+
+        Notes:
+            - The method directly accesses the `hex_map` attribute of the system,
+              assuming it's a dictionary-like object with a `keys` method.
+            - Each hex field is treated as a node in the context of this method.
+
+        Example:
+            >>> all_nodes = MoveCalculator_instance.collect_all_nodes()
+            >>> print(all_nodes)
+            [<HexField1>, <HexField2>, ...]
+        """
+
         all_nodes = []
 
         for hex_field in self.hex_map.hex_map.keys():
@@ -730,11 +991,33 @@ class MoveCalculator:
         return all_nodes
 
     def collect_move_paths(self):
+        """
+        Collect all possible movement paths from each node (hex field) in the system.
+
+        This method retrieves all nodes (hex fields) from the system and, for each node,
+        determines the possible movement paths based on neighbouring conditions. All
+        these paths are then aggregated and returned as a list.
+
+        Returns:
+            list: A list containing all possible movement paths from each node in the system.
+
+        Notes:
+            - The method relies on other methods like `collect_all_nodes` and `get_neighbour_conditions`
+              to perform its operations.
+            - A movement path is determined by the conditions required to move from a node to its
+              neighbouring nodes.
+            - The method prints out the number of nodes being processed for debugging or informational purposes.
+
+        Example:
+            >>> system_instance = MoveCalculator()
+            >>> move_paths = system_instance.collect_move_paths()
+            >>> print(move_paths)
+            [(<Node1>, <Direction1>, <TargetNode1>, ...), (<Node2>, <Direction2>, <TargetNode2>, ...), ...]
+        """
+
         all_move_paths = []
 
         all_nodes = self.collect_all_nodes()
-
-        print(f"How many nodes? {len(all_nodes)}")
 
         for node in all_nodes:
             paths = self.get_neighbour_conditions(node)
@@ -747,24 +1030,109 @@ class MoveCalculator:
 
 class Graph:
     def __init__(self, move_calculator):
-        print("Initializing graph")
+        """
+        Initialize the graph object with move paths, neighbours, and nodes.
 
+        This constructor initializes the graph by using a provided move calculator
+        to gather move paths, neighbours for all nodes, and all nodes present in the system.
+
+        Args:
+            move_calculator: An object that provides methods to collect move paths,
+                             neighbours, and nodes for the graph. It should have
+                             the following methods:
+                             - collect_move_paths()
+                             - collect_neighbours_for_all()
+                             - collect_all_nodes()
+
+        Attributes:
+            edges (list): A list of move paths collected from the move calculator.
+            neighbours (dict): A dictionary with nodes as keys and their neighbours
+                               as values, collected from the move calculator.
+            nodes (list): A list of all nodes collected from the move calculator.
+
+        Notes:
+            - The initialization process also prints "Initializing graph" for
+              debugging or informational purposes.
+
+        Example:
+            >>> move_calculator_instance = MoveCalculatorClass()  # Assuming MoveCalculatorClass is the name of the move calculator class
+            >>> graph_instance = GraphClass(move_calculator_instance)  # Assuming the class is named GraphClass
+            >>> print(graph_instance.nodes)
+            [<Node1>, <Node2>, ...]
+        """
         self.edges = move_calculator.collect_move_paths()
         self.neighbours = move_calculator.collect_neighbours_for_all()
         self.nodes = move_calculator.collect_all_nodes()
 
     def get_movement_cost(self, node1, node2):
+        """
+        Retrieve the movement cost between two nodes.
+
+        This method searches through the graph's edges to find the movement cost
+        between the specified nodes, `node1` and `node2`.
+
+        Args:
+            node1: The starting node.
+            node2: The ending node.
+
+        Returns:
+            int or float: The movement cost between `node1` and `node2`. If no edge
+                          is found between the nodes, the method returns `None`.
+
+        Notes:
+            - The method assumes that edges are represented as a list of tuples where:
+                * The first item is the starting node.
+                * The third item is the ending node.
+                * The fourth item is the movement cost.
+            - Only the first matching edge found is considered.
+
+        Example:
+            >>> graph_instance = Graph(move_calculator_instance)
+            >>> cost = graph_instance.get_movement_cost(nodeA, nodeB)
+            >>> print(cost)
+            5
+        """
+
         for item in self.edges:
             if item[0] == node1 and item[2] == node2:
                 return item[3]
 
     def djikstra(self, start_hex):
+        """
+        Implement the Dijkstra's shortest path algorithm starting from a given hex field.
+
+        This method determines the shortest distance from a given starting hex field (`start_hex`)
+        to all other hex fields in the system using Dijkstra's algorithm.
+
+        Args:
+            start_hex (Hex): The starting hex field from which shortest distances to all
+                             other hex fields are to be calculated.
+
+        Returns:
+            dict: A dictionary containing hex fields as keys and their shortest distances
+                  from the `start_hex` as values.
+
+        Notes:
+            - The method relies on the `update_neighbour_distances` method to update the
+              distances of neighboring hex fields of the currently processed node.
+            - The `neighbours` attribute, expected to be a dictionary with hex fields
+              as keys and their neighbors as values, is used to determine the hex field
+              neighbors.
+            - The method assumes that if there's no path to a hex field, its distance
+              remains set to infinity.
+
+        Example:
+            >>> system_instance = Graph(move_calculator_instance)
+            >>> distances = system_instance.djikstra(some_start_hex)
+            >>> print(distances)
+            {<HexField1>: 5, <HexField2>: 10, ...}
+        """
+
         distances = {}
 
         # Set all distances to infinity and start hex_field to 0
 
-        for node in self.neighbours.keys():
-            distances[node] = math.inf
+        distances = {node: math.inf for node in self.neighbours.keys()}
         distances[start_hex] = 0
 
         # Add all hex_fields to the unvisited set
@@ -781,6 +1149,36 @@ class Graph:
         return distance
 
     def update_neighbour_distances(self, current_node, distances):
+        """
+        Update the distances of neighboring nodes based on the current node's distance.
+
+        Given a current node and its known shortest distances to other nodes, this method
+        updates the distances of its neighboring nodes by considering the movement cost
+        from the current node to each neighbor.
+
+        Args:
+            current_node: The node currently being processed.
+            distances (dict): A dictionary containing nodes as keys and their current shortest
+                              distances as values.
+
+        Returns:
+            dict: The updated distances dictionary with potentially shorter distances for
+                  the neighboring nodes of the current node.
+
+        Notes:
+            - The method utilizes the `get_movement_cost` function to determine the movement
+              cost between the current node and each of its neighbors.
+            - Only neighbors with a shorter new distance (compared to their current shortest
+              distance) are updated in the distances dictionary.
+
+        Example:
+            >>> graph_instance = Graph(move_calculator_instance)
+            >>> distances = {nodeA: 0, nodeB: 5, nodeC: 10}
+            >>> updated_distances = graph_instance.update_neighbour_distances(nodeA, distances)
+            >>> print(updated_distances)
+            {nodeA: 0, nodeB: 3, nodeC: 8}
+        """
+
         for neighbour in self.neighbours[current_node]:
             if neighbour in distances:
                 new_distance = distances[current_node] + self.get_movement_cost(

@@ -1,3 +1,5 @@
+from PySide6.QtCore import Qt, QSize, QObject, Signal
+from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QFont
 from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
@@ -10,11 +12,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
 )
-from PySide6.QtCore import Qt, QSize, QObject, Signal
-from PySide6.QtGui import QPen, QPainterPath, QPixmap, QColor, QFont
+
 import gameobjects
 from map_logic import Hex
-
 
 PEN_COLOR_HOVER = "#979068"
 PEN_COLOR_DEFAULT = "#2b362b"
@@ -94,12 +94,12 @@ class HexMapVisualization(QGraphicsView):
 
         # Determine the gradient segment and adjust the factor for the segment
         if factor < 0.5:
-            start_color = QColor("green")
-            end_color = QColor("yellow")
+            start_color = QColor("#78a26c")
+            end_color = QColor("#ffca51")
             factor = factor * 2  # Adjust factor for this segment
         else:
-            start_color = QColor("yellow")
-            end_color = QColor("red")
+            start_color = QColor("#ffca51")
+            end_color = QColor("#832800")
             factor = (factor - 0.5) * 2  # Adjust factor for this segment
 
         return self.interpolate_color(start_color, end_color, factor)
@@ -182,18 +182,19 @@ class HexMapVisualization(QGraphicsView):
             label_distances.setFont(QFont("Vinque Rg", 15))
             label_distances.setPos(
                 hex_x_coordinates - label_distances.boundingRect().width() / 2,
-                hex_y_coordinates - label_distances.boundingRect().height() - 30,
+                hex_y_coordinates - label_distances.boundingRect().height() + 60,
             )
             label_distances.setOpacity(1)
 
             color = self.get_color_for_distance(distances[hex_field])
-            label_distances.setDefaultTextColor(color)
+            label_distances.setDefaultTextColor("#130f06")
 
             # Draw a small circle below the label
             circle_path = QPainterPath()
-            circle_path.addEllipse(label_distances.boundingRect().center(), 10, 10)
+            circle_path.addEllipse(label_distances.boundingRect().center(), 13, 13)
             circle_item = QGraphicsPathItem(circle_path)
-            circle_item.setBrush(QColor("gray"))
+            circle_item.setBrush(QColor(color))
+            circle_item.setOpacity(0.6)
             circle_item.setPen(Qt.NoPen)
             circle_item.setPos(label_distances.pos())
 

@@ -3,7 +3,7 @@ import math
 import random
 import re
 
-from gameobjects import Terrain
+from gameobjects import Terrain, Structure
 
 
 class Hex:
@@ -660,6 +660,38 @@ class EdgeMap:
         else:
             self.edge_map[edge] = [game_object]
 
+    def append_chain_of_object_to_edges(
+        self, source_hex_field, direction_list, game_object
+    ):
+        """
+        Append a game object to a series of edges defined by a chain of directions.
+
+        Starting from a source hex field, this method moves in the specified directions
+        sequentially and appends the game object to the edge at each step. The source hex
+        field is then updated to its neighbor in the current direction, and the process
+        continues until all directions in the list are processed.
+
+        Args:
+            source_hex_field (Hex): The starting hex field where the chain begins.
+            direction_list (list[int]): List of directions (0-5) defining the chain.
+            game_object: The game object to be appended to the edges.
+
+        Notes:
+            - The method uses `Hex.get_edge_by_direction` to get the edge in a specific
+              direction from a hex field.
+            - It also uses `Hex.get_neighbour_hex` to update the source hex field after
+              each step.
+
+        Example:
+            >>> hex_instance = HexFieldClass()
+            >>> directions = [0, 2, 4]
+            >>> hex_instance.append_chain_of_object_to_edges(start_hex, directions, game_obj)
+        """
+        for direction in direction_list:
+            edge = Hex.get_edge_by_direction(source_hex_field, direction)
+            self.append_object_to_edge(edge, game_object)
+            source_hex_field = Hex.get_neighbour_hex(source_hex_field, direction)
+
     def get_edge_object_list(self, edge):
         """
         Gets the list of game objects in an edge.
@@ -754,6 +786,20 @@ class MoveCalculator:
 
         return neighbours
 
+    def is_valid_direction(self, hex_field, direction):
+        """
+        Checks if a given direction is valid for the specified hex field.
+
+        Args:
+            hex_field (Hex): The hex field to check.
+            direction (int): The direction to validate.
+
+        Returns:
+            bool: True if the direction is valid, otherwise False.
+        """
+        neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+        return self.hex_map.hex_exists(neighbour_hex)
+
     def get_neighbour_conditions(self, hex_field):
         """
         Get a list of valid conditions for neighboring hexes of the given hex field.
@@ -784,54 +830,55 @@ class MoveCalculator:
 
         condition_list = []
 
-        valid_directions = []
-
         for direction in range(6):
-            neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
-            if self.hex_map.hex_exists(neighbour_hex):
-                valid_directions.append(direction)
-
-        for direction in valid_directions:
-            movement_cost = self.get_movement_cost(hex_field, direction)
-            movement_conditions = self.get_movement_conditions(hex_field, direction)
-            move_target = Hex.get_neighbour_hex(hex_field, direction)
-            condition_list.append(
-                (hex_field, direction, move_target, movement_cost, movement_conditions)
-            )
-
+            if self.is_valid_direction(hex_field, direction):
+                movement_cost = self.get_movement_cost(hex_field, direction)
+                movement_conditions = self.get_movement_conditions(hex_field, direction)
+                neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
+                condition_list.append(
+                    (
+                        hex_field,
+                        direction,
+                        neighbour_hex,
+                        movement_cost,
+                        movement_conditions,
+                    )
+                )
         return condition_list
 
     def get_movement_cost(self, hex_field, direction):
         """
-        Calculate the movement cost for moving in a specified direction from a given hex field.
+        Calculate the cumulative movement cost for moving in a specified direction
+        from a given hex field.
 
-        This method determines the movement cost based on the `Terrain` objects present
-        in the specified direction from the given hex field. It accumulates the movement costs
-        of the terrain objects in both the target hex and any terrain objects on the edge
-        between the current and target hex.
+        This method determines the cumulative movement cost based on the `Terrain`
+        and `Structure` objects present in the specified direction from the given
+        hex field. It accumulates the movement costs from both the target hex and
+        any objects on the edge between the current and target hex.
 
         Args:
-            hex_field (Hex): The starting hex field from which we want to determine
-                             the movement cost.
-            direction (int): The direction (0-5) in which we want to move.
+            hex_field (Hex): The starting hex field for which the movement cost is
+                             being determined.
+            direction (int): The direction (0-5) for which the movement cost is
+                             being calculated.
 
         Returns:
-            int: The total movement cost for moving in the specified direction
-                 from the given hex field.
+            int or float: The total movement cost for the specified direction from
+                          the given hex field.
 
         Notes:
-            - The method relies on the `neighbouring_hex_and_edge_objects` method
-              to get the neighboring hex and edge objects.
-            - The movement costs of all `Terrain` objects in the hex and on the edge
-              are accumulated to calculate the total cost.
+            - Relies on `neighbouring_hex_and_edge_objects` to get neighboring hex
+              and edge objects.
+            - Movement costs of `Terrain` objects are accumulated.
+            - For `Structure` objects, the movement cost is added to the cumulative
+              cost if the sum is >= 1. Otherwise, the cumulative cost is set to 1.
 
         Example:
-            >>> hex_instance = Hex()
+            >>> hex_instance = HexFieldClass()
             >>> cost = hex_instance.get_movement_cost(some_hex_field, 2)
             >>> print(cost)
             7
         """
-
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
             hex_field, direction
         )
@@ -841,6 +888,15 @@ class MoveCalculator:
             if isinstance(game_object, Terrain):
                 summed_movement_cost += game_object.movement_cost
 
+            if (
+                isinstance(game_object, Structure)
+                and summed_movement_cost + game_object.movement_cost >= 1
+            ):
+                potential_new_cost = summed_movement_cost + game_object.movement_cost
+                if potential_new_cost >= 1:
+                    summed_movement_cost += game_object.movement_cost
+                else:
+                    summed_movement_cost = 1  # Movement cost can't be less than 1
         return summed_movement_cost
 
     def get_movement_conditions(self, hex_field, direction):
@@ -891,12 +947,13 @@ class MoveCalculator:
         """
         Retrieve objects from the neighboring hex and its edge based on a given direction.
 
-        Given a hex field and a direction, this method returns the objects present
-        in the neighboring hex and the objects present on the edge between the current
-        hex and its neighbor.
+        Given a hex field and a direction, this method returns the objects present in the
+        neighboring hex and the objects present on the edge between the current hex and its
+        neighbor.
 
         Args:
-            hex_field (Hex): The hex field from which the neighboring objects are to be retrieved.
+            hex_field (Hex): The hex field from which the neighboring objects are to be
+                retrieved.
             direction (int): The direction (0-5) in which we want to retrieve the objects.
 
         Returns:
@@ -906,13 +963,15 @@ class MoveCalculator:
                   hex and its neighbor.
 
         Notes:
-            - The method relies on other methods like `hex_map.hex_exists`, `hex_map.get_hex_object_list`,
-              and `edge_map.get_edge_object_list` to perform its operations.
+            - The method relies on other methods like `hex_map.hex_exists`,
+              `hex_map.get_hex_object_list`, and `edge_map.get_edge_object_list` to perform
+              its operations.
             - If the hex doesn't exist in the map, two empty lists are returned.
 
         Example:
             >>> hex_instance = Hex()  # Assuming the class is named HexFieldClass
-            >>> hex_objects, edge_objects = hex_instance.neighbouring_hex_and_edge_objects(some_hex_field, 2)
+            >>> hex_objects, edge_objects = hex_instance.neighbouring_hex_and_edge_objects(
+            ...     some_hex_field, 2)
             >>> print(hex_objects, edge_objects)
             [<GameObject1>, <GameObject2>, ...], [<EdgeObject1>, <EdgeObject2>, ...]
         """

@@ -2,7 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from gameobjects import Terrain, ObjectIDGenerator
+from gameobjects import ObjectIDGenerator, Structure
 from map_logic import HexMap, EdgeMap, Hex, MoveCalculator, Graph
 from visualize_map import HexMapApp
 
@@ -45,7 +45,7 @@ hexmap.initialize_hex_map(-8, 8, -8, 8)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 
-
+"""
 edgemap.append_object_to_edge(
     Hex.hex_obj_from_string("0,0").get_edge_by_direction(0),
     Terrain(game.object_id_generator, "Generated_Terrain", "river"),
@@ -66,6 +66,18 @@ edgemap.append_object_to_edge(
 edgemap.append_object_to_edge(
     Hex.hex_obj_from_string("0,0").get_edge_by_direction(5),
     Terrain(game.object_id_generator, "Generated_Terrain", "river"),
+)
+"""
+edgemap.append_object_to_edge(
+    Hex.hex_obj_from_string("0,0").get_edge_by_direction(0),
+    Structure(game.object_id_generator, "Generated_Structure", "road"),
+)
+
+
+edgemap.append_chain_of_object_to_edges(
+    Hex.hex_obj_from_string("0,0"),
+    [0, 2, 1, 1, 3, 2, 1],
+    Structure(game.object_id_generator, "Silk road", "road"),
 )
 
 

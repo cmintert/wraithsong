@@ -1,0 +1,13 @@
+{
+  "structure": {
+    "road": {
+      "texture": "road.png",
+      "movement_cost": -1,
+      "edgeobject": "True"
+    },
+    "bridge": {
+      "texture": "bridge",
+      "movement_cost": -2,
+      "edgeobject": "True",
+    }
+  }

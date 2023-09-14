@@ -7,6 +7,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
+  </component>
   <component name="SonarLintModuleSettings">
     <option name="uniqueId" value="1cdb50d7-0580-4199-bfc7-15c845ad9509" />
   </component>

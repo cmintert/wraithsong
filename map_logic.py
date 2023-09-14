@@ -1097,7 +1097,7 @@ class Graph:
             if item[0] == node1 and item[2] == node2:
                 return item[3]
 
-    def djikstra(self, start_hex):
+    def djikstra(self, start_hex, move_cost_limit=math.inf):
         """
         Implement the Dijkstra's shortest path algorithm starting from a given hex field.
 
@@ -1107,6 +1107,7 @@ class Graph:
         Args:
             start_hex (Hex): The starting hex field from which shortest distances to all
                              other hex fields are to be calculated.
+            move_cost_limit (int): The maximum movement cost allowed for a path to be considered.
 
         Returns:
             dict: A dictionary containing hex fields as keys and their shortest distances
@@ -1143,6 +1144,8 @@ class Graph:
         while unvisited:
             # Select the node with the smallest distance
             current_node = min(unvisited, key=lambda node: distances[node])
+            if distances[current_node] > move_cost_limit:
+                break
             distance = self.update_neighbour_distances(current_node, distances)
             unvisited.remove(current_node)
 

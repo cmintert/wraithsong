@@ -45,7 +45,6 @@ class HoverableHexagon(QGraphicsPathItem):
         self.setZValue(10)
 
     def hoverLeaveEvent(self, event):
-        # Reset the pen color or style when the mouse leaves the hexagon
         pen = QPen(QColor(PEN_COLOR_DEFAULT))  # Original color
         pen.setWidth(5)
         self.setPen(pen)
@@ -139,6 +138,7 @@ class HexMapVisualization(QGraphicsView):
         hoverable_hex.emitter.hex_hovered.connect(self.update_info_label)
         hoverable_hex.emitter.hex_hovered.connect(self.show_move_distances)
         hoverable_hex.setPen(pen)
+
         self.scene.addItem(hoverable_hex)
 
         for game_object in self.hex_map.get_hex_object_list(hex):
@@ -160,50 +160,51 @@ class HexMapVisualization(QGraphicsView):
 
         self.scene.addItem(label)
 
-    def show_move_distances(self, q=0, r=0):
+    def show_move_distances(self, q=0, r=0, move_cost_limit=6):
         hex_size = 80
 
-        distances = self.graph.djikstra(Hex.hex_obj_from_string(f"{q},{r}"))
-
+        distances = self.graph.djikstra(
+            Hex.hex_obj_from_string(f"{q},{r}"), move_cost_limit
+        )
+        print(distances)
         # Remove all distance labels from the scene
         for item in self.scene.items():
-            if isinstance(item, QGraphicsTextItem) and getattr(
-                item, "is_distance_label", False
-            ):
+            if getattr(item, "is_distance_label", False):
                 self.scene.removeItem(item)
 
         # Iterate over the Hex Fields and add the distance labels
         for hex_field in self.hex_map.hex_map.keys():
-            hex_x_coordinates, hex_y_coordinates = hex_field.get_pixel_coordinates(
-                hex_size
-            )
+            if not distances[hex_field] > move_cost_limit:
+                hex_x_coordinates, hex_y_coordinates = hex_field.get_pixel_coordinates(
+                    hex_size
+                )
 
-            label_distances = QGraphicsTextItem(f"{distances[hex_field]}")
-            label_distances.setFont(QFont("Vinque Rg", 15))
-            label_distances.setPos(
-                hex_x_coordinates - label_distances.boundingRect().width() / 2,
-                hex_y_coordinates - label_distances.boundingRect().height() + 60,
-            )
-            label_distances.setOpacity(1)
+                label_distances = QGraphicsTextItem(f"{distances[hex_field]}")
+                label_distances.setFont(QFont("Vinque Rg", 15))
+                label_distances.setPos(
+                    hex_x_coordinates - label_distances.boundingRect().width() / 2,
+                    hex_y_coordinates - label_distances.boundingRect().height() + 60,
+                )
+                label_distances.setOpacity(1)
 
-            color = self.get_color_for_distance(distances[hex_field])
-            label_distances.setDefaultTextColor("#130f06")
+                color = self.get_color_for_distance(distances[hex_field])
+                label_distances.setDefaultTextColor("#130f06")
 
-            # Draw a small circle below the label
-            circle_path = QPainterPath()
-            circle_path.addEllipse(label_distances.boundingRect().center(), 13, 13)
-            circle_item = QGraphicsPathItem(circle_path)
-            circle_item.setBrush(QColor(color))
-            circle_item.setOpacity(0.6)
-            circle_item.setPen(Qt.NoPen)
-            circle_item.setPos(label_distances.pos())
+                # Draw a small circle below the label
+                circle_path = QPainterPath()
+                circle_path.addEllipse(label_distances.boundingRect().center(), 13, 13)
+                circle_item = QGraphicsPathItem(circle_path)
+                circle_item.setBrush(QColor(color))
+                circle_item.setOpacity(0.6)
+                circle_item.setPen(Qt.NoPen)
+                circle_item.setPos(label_distances.pos())
 
-            # Flag items as distance labels
-            circle_item.is_distance_label = True
-            label_distances.is_distance_label = True
+                # Flag items as distance labels
+                circle_item.is_distance_label = True
+                label_distances.is_distance_label = True
 
-            self.scene.addItem(circle_item)
-            self.scene.addItem(label_distances)
+                self.scene.addItem(circle_item)
+                self.scene.addItem(label_distances)
 
     def add_graphic_to_hex(self, hex_field, size, asset="missing.png"):
         x_axis, y_axis = hex_field.get_pixel_coordinates(size)

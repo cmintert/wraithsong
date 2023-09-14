@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QApplication
-
 import sys
 
+from PySide6.QtWidgets import QApplication
+
+from gameobjects import Terrain, ObjectIDGenerator
 from map_logic import HexMap, EdgeMap, Hex, MoveCalculator, Graph
 from visualize_map import HexMapApp
-from gameobjects import Terrain, ObjectIDGenerator
 
 
 class Game:
@@ -41,7 +41,7 @@ edgemap = game.edgemap
 players = game.players
 
 
-hexmap.initialize_hex_map(-2, 1, -2, 1)
+hexmap.initialize_hex_map(-8, 8, -8, 8)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 

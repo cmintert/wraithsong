@@ -26,7 +26,7 @@
       "movement_cost": 3,
       "visibility": 6,
       "edgeobject": "True",
-      "terrain_condition": "river, break_10"
+      "terrain_condition": "river, break_10, bridgeable"
     },
     "volcano": {
       "texture": "volcano.png",
@@ -42,8 +42,11 @@
     "break_xx": {
       "description": "break_xx is a condition that consumes movement with movement taking placs in xx % of the cases."
     },
-    "rivercrossing": {
+    "river": {
       "description": "Rivercrossing is needed in form of small boats or briding equipment"   
+    },
+    "bridgeable": {
+      "description": "This terrain can be bridged"
     }
   }
 }

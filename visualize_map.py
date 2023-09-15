@@ -122,6 +122,11 @@ class HexMapVisualization(QGraphicsView):
                     and game_object.terrain_type == "road"
                 ):
                     self.add_graphic_to_edge(edge, hex_size, "road.png")
+                elif (
+                    isinstance(game_object, gameobjects.Structure)
+                    and game_object.terrain_type == "bridge"
+                ):
+                    self.add_graphic_to_edge(edge, hex_size, "bridge.png")
 
     def draw_hex_terrain(self, hex, size):
         # Define hex corners

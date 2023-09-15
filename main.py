@@ -2,8 +2,9 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from gameobjects import ObjectIDGenerator, Structure
-from map_logic import HexMap, EdgeMap, Hex, MoveCalculator, Graph
+from gameobjects import ObjectIDGenerator, Structure, Terrain
+from map_logic import HexMap, EdgeMap, Hex
+from move_logic import MoveCalculator, Graph
 from visualize_map import HexMapApp
 
 
@@ -45,34 +46,20 @@ hexmap.initialize_hex_map(-8, 8, -8, 8)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 
-"""
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(0),
-    Terrain(game.object_id_generator, "Generated_Terrain", "river"),
-)
-# edgemap.append_object_to_edge(Hex.hex_obj_from_string("0,0").get_edge_by_direction(1), Terrain(game.object_id_generator, "Generated_Terrain", "river"))
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(2),
-    Terrain(game.object_id_generator, "Generated_Terrain", "river"),
-)
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(3),
-    Terrain(game.object_id_generator, "Generated_Terrain", "river"),
-)
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(4),
-    Terrain(game.object_id_generator, "Generated_Terrain", "river"),
-)
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(5),
-    Terrain(game.object_id_generator, "Generated_Terrain", "river"),
-)
-"""
-edgemap.append_object_to_edge(
-    Hex.hex_obj_from_string("0,0").get_edge_by_direction(0),
-    Structure(game.object_id_generator, "Generated_Structure", "road"),
-)
+for direction in range(6):
+    edgemap.append_object_to_edge(
+        Hex.hex_obj_from_string("-1,0").get_edge_by_direction(direction),
+        Terrain(game.object_id_generator, "Generated_Terrain", "river"),
+    )
 
+edgemap.append_object_to_edge(
+    Hex.hex_obj_from_string("-1,0").get_edge_by_direction(3),
+    Structure(game.object_id_generator, "Klakertrollbrücke", "bridge"),
+)
+edgemap.append_object_to_edge(
+    Hex.hex_obj_from_string("-1,0").get_edge_by_direction(3),
+    Structure(game.object_id_generator, "Monster road", "road"),
+)
 
 edgemap.append_chain_of_object_to_edges(
     Hex.hex_obj_from_string("0,0"),

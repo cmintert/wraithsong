@@ -1,68 +1,126 @@
-import sqlite3
-import os
+from sqlalchemy import create_engine, declarative_base
+from sqlalchemy.orm import sessionmaker
+
+# Database setup
+DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(DATABASE_URL, echo=True)
+
+# Base class for models
+Base = declarative_base()
+
+# Session factory
+SessionLocal = sessionmaker(bind=engine)
 
 
-def create_database():
-    data_path = "./"
-    filename = "wraithsong"
-
-    os.makedirs(data_path, exist_ok=True)
-
-    conn = sqlite3.connect(os.path.join(data_path, f"{filename}.db"))
-    conn.close()
+def init_db():
+    """Function to initialize the database and create tables"""
+    Base.metadata.create_all(bind=engine)
 
 
-def clear_database(name="wraithsong.db"):
-    conn = sqlite3.connect(name)
-    cursor = conn.cursor()
+class SaveGame(Base):
+    __tablename__ = "savegames"
 
-    sql_string = "SELECT name FROM sqlite_master WHERE type='table'"
-    cursor.execute(sql_string)
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    game_name = Column(String(100))
+    game_data = Column(Text)
 
-    tables = cursor.fetchall()
+    def __init__(self, game_name, game_data):
+        self.game_name = game_name
+        self.game_data = game_data
 
-    for table in tables:
-        sql_string = f"DROP TABLE {table[0]}"
-        cursor.execute(sql_string)
-
-    conn.commit()
-    conn.close()
-
-
-def create_gameobject_table():
-    conn = sqlite3.connect("wraithsong.db")
-    cursor = conn.cursor()
-
-    sql_string = """
-        CREATE TABLE IF NOT EXISTS game_objects (
-            Human_readable_id TEXT UNIQUE,
-            internal_id TEXT UNIQUE NOT NULL,
-            name TEXT,
-            object_type TEXT,
-            position TEXT
-        )
-    """
-    cursor.execute(sql_string)
-
-    conn.commit()
-    conn.close()
+    def __repr__(self):
+        return f"<SaveGame(id={self.id}, timestamp={self.timestamp}, game_name={self.game_name})>"
 
 
-def write_gameobject(game_object, hexmap):
-    conn = sqlite3.connect("wraithsong.db")
-    cursor = conn.cursor()
+class GameObject(Base):
+    __tablename__ = "gameobjects"
 
-    position_object = game_object.get_position(hexmap)
-    position = f"{position_object.q_axis}, {position_object.r_axis}"
+    internal_id = Column(String, primary_key=True)
+    object_id = Column(String)
+    name = Column(String)
+    object_type = Column(String(50))
 
-    sql_string = """
-        INSERT INTO game_objects (internal_id, name, object_type, position)
-        VALUES (?,?,?,?)  
-    """
-    cursor.execute(
-        sql_string,
-        (game_object.internal_id, game_object.name, game_object.object_type, position),
+    # Derived tables will populate this column to identify the subtype
+    type = Column(String(50))
+
+    __mapper_args__ = {"polymorphic_identity": "gameobject", "polymorphic_on": type}
+
+
+class Terrain(GameObject):
+    __tablename__ = "terrains"
+
+    internal_id = Column(
+        String, ForeignKey("gameobjects.internal_id"), primary_key=True
     )
+    terrain_type = Column(String)
+    elevation = Column(Integer)
 
-    conn.commit()
-    conn.close()
+    # Other dynamic attributes from the 'terrain.json' file can be added as needed.
+    # For instance, if you have an attribute called 'humidity' in the json file:
+    # humidity = Column(Integer)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "terrain",
+    }
+
+
+class Structure(GameObject):
+    __tablename__ = "structures"
+
+    internal_id = Column(
+        String, ForeignKey("gameobjects.internal_id"), primary_key=True
+    )
+    structure_type = Column(String)
+
+    # Other dynamic attributes from the 'structure.json' file can be added as needed.
+    # For example:
+    # material = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "structure",
+    }
+
+
+class DbSession:
+    def __enter__(self):
+        self.session = SessionLocal()
+        return self.session
+
+    def __exit__(self, type, value, traceback):
+        self.session.close()
+
+
+class DbInteraction:
+    def __init__(self, session: Session):
+        self.db = session
+
+    def create_game_object(self, game_object: GameObject):
+        self.db.add(game_object)
+        self.db.commit()
+        self.db.refresh(game_object)
+        return game_object
+
+    def get_game_object(self, internal_id: str):
+        return (
+            self.db.query(GameObject)
+            .filter(GameObject.internal_id == internal_id)
+            .first()
+        )
+
+    def get_game_objects(self, skip: int = 0, limit: int = 100):
+        return self.db.query(GameObject).offset(skip).limit(limit).all()
+
+    def update_game_object(self, game_object: GameObject):
+        self.db.merge(game_object)
+        self.db.commit()
+        return game_object
+
+    def delete_game_object(self, internal_id: str):
+        obj = (
+            self.db.query(GameObject)
+            .filter(GameObject.internal_id == internal_id)
+            .first()
+        )
+        self.db.delete(obj)
+        self.db.commit()

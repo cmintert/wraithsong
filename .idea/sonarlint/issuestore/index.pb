@@ -13,8 +13,6 @@ w
 G.idea/sonarlint/issuestore/1/e/1e9075f5bf079c01ef2c910709e91a497d262080,2\5\2511a7590eb091d560dac1615e6bcef0ceeaffb6
 A
 identifier.sqlite,5\7\57eb79cd3d4a5ae040525478ea4fe859974bbc3c
-9
-	Structure,9\4\9482c5d5bfbed584fddcc442794dd8d3d9813064
 ;
 database.py,1\2\12d0bfc8adac6eee15262b728a538821e35c98c9
 @
@@ -34,3 +32,5 @@ A
 terrain.json,7\2\72d1ccb5a9e9327dbc3693ee2efe5fe4b2f13a21
 Y
 ).github/workflows/qodana_code_quality.yml,4\f\4f751ec70a5e7dcf5d05ba8965348b627e7b3e80
+>
+structure.json,6\6\66bab976a4f1469f9116ee9b36b2b7917266e5e0

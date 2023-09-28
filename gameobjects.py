@@ -1,6 +1,6 @@
 import json
-import uuid
 import random
+import uuid
 
 
 class ObjectIDGenerator:
@@ -123,6 +123,39 @@ class GameObject:
         """
         id_generator.used_counters.remove(self.object_id)
         del self
+
+
+class Structure(GameObject):
+    def __init__(self, id_generator, name, structure_type):
+        super().__init__(id_generator, name, object_type="structure")
+
+        self.terrain_type = structure_type
+
+        with open("structure.json", "r") as file:
+            structure_data = json.load(file)
+
+        # get all the attributes listed under "terrain" in the json file
+
+        attributes = structure_data["structure"].get(structure_type, {})
+
+        for key, value in attributes.items():
+            setattr(self, key, value)
+
+    def __str__(self):
+        """
+        Returns a detailed string representation of the structure object.
+
+        The returned string includes the object's ID, name, type, and any dynamically loaded attributes.
+
+        Returns:
+            str: A string representation of the terrain object.
+        """
+        attributes = [
+            f"{key}: {getattr(self, key)}"
+            for key in vars(self)
+            if key not in ["internal_id", "name", "object_type"]
+        ]
+        return super().__str__() + ", " + ", ".join(attributes)
 
 
 class Terrain(GameObject):

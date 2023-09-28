@@ -2,12 +2,17 @@
   "structure": {
     "road": {
       "texture": "road.png",
-      "movement_cost": -1,
-      "edgeobject": "True"
+      "movement_cost": -2,
+      "build_cost": 200,
+      "edgeobject": "True",
+      "structure_condition": "road"
     },
     "bridge": {
-      "texture": "bridge",
-      "movement_cost": -2,
+      "texture": "bridge.png",
+      "movement_cost": 0,
+      "build_cost": 200,
       "edgeobject": "True",
+      "structure_condition": "bridge"
     }
   }
+}

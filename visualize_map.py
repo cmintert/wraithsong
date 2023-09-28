@@ -117,6 +117,16 @@ class HexMapVisualization(QGraphicsView):
                     and game_object.terrain_type == "river"
                 ):
                     self.add_graphic_to_edge(edge, hex_size, "river.png")
+                elif (
+                    isinstance(game_object, gameobjects.Structure)
+                    and game_object.terrain_type == "road"
+                ):
+                    self.add_graphic_to_edge(edge, hex_size, "road.png")
+                elif (
+                    isinstance(game_object, gameobjects.Structure)
+                    and game_object.terrain_type == "bridge"
+                ):
+                    self.add_graphic_to_edge(edge, hex_size, "bridge.png")
 
     def draw_hex_terrain(self, hex, size):
         # Define hex corners
@@ -166,7 +176,7 @@ class HexMapVisualization(QGraphicsView):
         distances = self.graph.djikstra(
             Hex.hex_obj_from_string(f"{q},{r}"), move_cost_limit
         )
-        print(distances)
+
         # Remove all distance labels from the scene
         for item in self.scene.items():
             if getattr(item, "is_distance_label", False):

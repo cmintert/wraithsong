@@ -1,7 +1,7 @@
-import math
+from typing import List, Tuple, Dict, Any
 
 from gameobjects import Terrain, Structure
-from map_logic import Hex
+from map_logic import Hex, HexMap, EdgeMap
 
 
 class MoveCalculator:
@@ -14,7 +14,7 @@ class MoveCalculator:
         edge_map: An EdgeMap instance representing the game map edges.
     """
 
-    def __init__(self, hex_map, edge_map):
+    def __init__(self, hex_map: HexMap, edge_map: EdgeMap) -> None:
         """
         Initializes a MoveCalculator instance.
 
@@ -25,7 +25,7 @@ class MoveCalculator:
         self.hex_map = hex_map
         self.edge_map = edge_map
 
-    def get_neighbours(self, hex_field):
+    def get_neighbours(self, hex_field: Hex) -> List[Hex]:
         """
         Get a list of valid neighboring hexes for the given hex field.
 
@@ -58,7 +58,7 @@ class MoveCalculator:
 
         return neighbours
 
-    def is_valid_direction(self, hex_field, direction):
+    def is_valid_direction(self, hex_field: Hex, direction: int) -> bool:
         """
         Checks if a given direction is valid for the specified hex field.
 
@@ -72,7 +72,9 @@ class MoveCalculator:
         neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
         return self.hex_map.hex_exists(neighbour_hex)
 
-    def get_neighbour_conditions(self, hex_field):
+    def get_neighbour_conditions(
+        self, hex_field: Hex
+    ) -> List[Tuple[Hex, int, Hex, int, List[str]]]:
         """
         Get a list of valid conditions for neighboring hexes of the given hex field.
 
@@ -100,7 +102,7 @@ class MoveCalculator:
             `get_movement_conditions`, and `Hex.get_neighbour_hex` to perform its operations.
         """
 
-        condition_list = []
+        condition_list: List[Tuple[Hex, int, Hex, int, List[str]]] = []
 
         for direction in range(6):
             if self.is_valid_direction(hex_field, direction):
@@ -118,7 +120,7 @@ class MoveCalculator:
                 )
         return condition_list
 
-    def get_movement_cost(self, hex_field, direction):
+    def get_movement_cost(self, hex_field: Hex, direction: int) -> int:
         """
         Calculate the cumulative movement cost for moving in a specified direction
         from a given hex field.
@@ -162,8 +164,9 @@ class MoveCalculator:
 
         for game_object in hex_objects + edge_objects:
             if isinstance(game_object, Structure):
-                if game_object.structure_condition == "bridge":
-                    bridge = True
+                if hasattr(game_object, "structure_condition"):
+                    if game_object.structure_condition == "bridge":
+                        bridge = True
 
         for game_object in hex_objects + edge_objects:
             if isinstance(game_object, Terrain):
@@ -173,24 +176,26 @@ class MoveCalculator:
                         bridge = False
                         continue
 
-                summed_movement_cost += game_object.movement_cost
+                summed_movement_cost += getattr(game_object, "movement_cost", 10000)
 
             # Recalculate movement cost if structure is present
 
         if (
             isinstance(game_object, Structure)
-            and summed_movement_cost + game_object.movement_cost >= 1
+            and summed_movement_cost + getattr(game_object, "movement_cost", 10000) >= 1
             and bridge == False
         ):
-            potential_new_cost = summed_movement_cost + game_object.movement_cost
+            potential_new_cost = summed_movement_cost + getattr(
+                game_object, "movement_cost", 10000
+            )
             if potential_new_cost >= 1:
-                summed_movement_cost += game_object.movement_cost
+                summed_movement_cost += getattr(game_object, "movement_cost", 10000)
             else:
                 summed_movement_cost = 1  # Movement cost can't be less than 1
 
         return summed_movement_cost
 
-    def get_movement_conditions(self, hex_field, direction):
+    def get_movement_conditions(self, hex_field: Hex, direction: int) -> List[str]:
         """
         Retrieve movement conditions for a given direction from a specified hex field.
 
@@ -234,7 +239,9 @@ class MoveCalculator:
 
         return conditions
 
-    def neighbouring_hex_and_edge_objects(self, hex_field, direction):
+    def neighbouring_hex_and_edge_objects(
+        self, hex_field: Hex, direction: int
+    ) -> Tuple[List, List]:
         """
         Retrieve objects from the neighboring hex and its edge based on a given direction.
 
@@ -279,7 +286,7 @@ class MoveCalculator:
 
         return hex_objects, edge_objects
 
-    def collect_neighbours_for_all(self):
+    def collect_neighbours_for_all(self) -> Dict[Hex, List[Hex]]:
         """
         Collect the neighbouring nodes for all nodes in the system.
 
@@ -312,7 +319,7 @@ class MoveCalculator:
 
         return neighbour_list
 
-    def collect_all_nodes(self):
+    def collect_all_nodes(self) -> List[Hex]:
         """
         Collect all nodes (hex fields) present in the hex map.
 
@@ -340,7 +347,7 @@ class MoveCalculator:
 
         return all_nodes
 
-    def collect_move_paths(self):
+    def collect_move_paths(self) -> List[Tuple[Hex, int, Hex, int, List[str]]]:
         """
         Collect all possible movement paths from each node (hex field) in the system.
 
@@ -356,7 +363,6 @@ class MoveCalculator:
               to perform its operations.
             - A movement path is determined by the conditions required to move from a node to its
               neighbouring nodes.
-            - The method prints out the number of nodes being processed for debugging or informational purposes.
 
         Example:
             >>> system_instance = MoveCalculator()
@@ -379,7 +385,7 @@ class MoveCalculator:
 
 
 class Graph:
-    def __init__(self, move_calculator):
+    def __init__(self, move_calculator: MoveCalculator) -> None:
         """
         Initialize the graph object with move paths, neighbours, and nodes.
 
@@ -410,11 +416,15 @@ class Graph:
             >>> print(graph_instance.nodes)
             [<Node1>, <Node2>, ...]
         """
-        self.edges = move_calculator.collect_move_paths()
-        self.neighbours = move_calculator.collect_neighbours_for_all()
-        self.nodes = move_calculator.collect_all_nodes()
+        self.edges: List[
+            Tuple[Hex, int, Hex, int, List[str]]
+        ] = move_calculator.collect_move_paths()
+        self.neighbours: Dict[
+            Any, List[Any]
+        ] = move_calculator.collect_neighbours_for_all()
+        self.nodes: List[Any] = move_calculator.collect_all_nodes()
 
-    def get_movement_cost(self, node1, node2):
+    def get_movement_cost(self, node1: Hex, node2: Hex) -> int:
         """
         Retrieve the movement cost between two nodes.
 
@@ -426,8 +436,8 @@ class Graph:
             node2: The ending node.
 
         Returns:
-            int or float: The movement cost between `node1` and `node2`. If no edge
-                          is found between the nodes, the method returns `None`.
+            int: The movement cost between `node1` and `node2`. If no edge
+                          is found between the nodes, the method raises a ValueError.
 
         Notes:
             - The method assumes that edges are represented as a list of tuples where:
@@ -445,11 +455,11 @@ class Graph:
 
         for item in self.edges:
             if item[0] == node1 and item[2] == node2:
-                return item[3]
+                return int(item[3])
 
         raise ValueError("No movement cost found between the two nodes")
 
-    def djikstra(self, start_hex, move_cost_limit=math.inf):
+    def djikstra(self, start_hex: Hex, move_cost_limit: int = 10000):
         """
         Implement the Dijkstra's shortest path algorithm starting from a given hex field.
 
@@ -480,12 +490,9 @@ class Graph:
             >>> print(distances)
             {<HexField1>: 5, <HexField2>: 10, ...}
         """
-
-        distances = {}
-
         # Set all distances to infinity and start hex_field to 0
 
-        distances = {node: math.inf for node in self.neighbours.keys()}
+        distances: Dict[Hex, int] = {node: 10000 for node in self.neighbours.keys()}
         distances[start_hex] = 0
 
         # Add all hex_fields to the unvisited set
@@ -498,12 +505,14 @@ class Graph:
             current_node = min(unvisited, key=lambda node: distances[node])
             if distances[current_node] > move_cost_limit:
                 break
-            distance = self.update_neighbour_distances(current_node, distances)
+            distances = self.update_neighbour_distances(current_node, distances)
             unvisited.remove(current_node)
 
-        return distance
+        return distances
 
-    def update_neighbour_distances(self, current_node, distances):
+    def update_neighbour_distances(
+        self, current_node: Hex, distances: Dict[Hex, int]
+    ) -> Dict[Hex, int]:
         """
         Update the distances of neighboring nodes based on the current node's distance.
 

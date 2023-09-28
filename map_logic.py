@@ -2,6 +2,7 @@ import json
 import math
 import random
 import re
+from typing import Type
 
 from gameobjects import Terrain
 
@@ -280,7 +281,7 @@ class Hex:
         raise ValueError("The hexes are not direct neighbors")
 
     @classmethod
-    def get_neighbour_hex(cls, hex_field, direction):
+    def get_neighbour_hex(cls: Type["Hex"], hex_field: "Hex", direction: int) -> "Hex":
         """
         Returns the Hex object in the given direction from another Hex object.
 

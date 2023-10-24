@@ -31,7 +31,7 @@ class Game:
 
     def __init__(self, name):
         self.name = name
-        self.hexmap = HexMap()
+        self.hexmap = HexMap(-8, 8, -8, 8)
         self.edgemap = EdgeMap()
         self.object_id_generator = ObjectIDGenerator()
         self.players = []
@@ -43,7 +43,6 @@ edgemap = game.edgemap
 players = game.players
 
 
-hexmap.initialize_hex_map(-8, 8, -8, 8)
 edgemap.initialize_edge_map(hexmap.hex_map)
 hexmap.fill_map_with_terrain(game)
 

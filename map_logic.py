@@ -4,6 +4,7 @@ import random
 import re
 from typing import Type
 
+from database import GameDatabase
 from gameobjects import Terrain
 
 
@@ -38,6 +39,8 @@ class Hex:
             q_axis (int): The q-axis coordinate of the hexagon.
             r_axis (int): The r-axis coordinate of the hexagon.
         """
+        self.object_id = f"{q_axis},{r_axis}"
+        self.game_database = GameDatabase()
         self.q_axis = q_axis
         self.r_axis = r_axis
         self.s_axis = -q_axis - r_axis
@@ -318,6 +321,9 @@ class Hex:
 
         return Hex(int(string.split(",")[0]), int(string.split(",")[1]))
 
+    def save_hex_object(self):
+        self.game_database.save_hex_object(self)
+
 
 class Edge:
     """
@@ -406,11 +412,22 @@ class HexMap:
     - hex_map: a dictionary containing the hexagonal map
     """
 
-    def __init__(self):
+    def __init__(self, left, right, top, bottom):
         """
         Initializes an empty hexagonal map.
         """
         self.hex_map = {}
+        self.game_database = GameDatabase()
+
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+
+        self.initialize_hex_map(left, right, top, bottom)
+
+    def save_hex_map_size(self, hex_map):
+        self.game_database.save_hex_map_size(hex_map)
 
     def initialize_hex_map(self, left, right, top, bottom):
         """
@@ -422,10 +439,13 @@ class HexMap:
         - top: the top row of the map
         - bottom: the bottom row of the map
         """
+        self.save_hex_map_size(self)
         for r_axis in range(top, bottom + 1):
             r_offset = int(r_axis // 2.0)
             for q_axis in range(left - r_offset, right - r_offset + 1):
-                self.hex_map.update({Hex(q_axis, r_axis): []})
+                temp_hex = Hex(q_axis, r_axis)
+                self.hex_map.update({temp_hex: []})
+                temp_hex.save_hex_object()
 
     def has_terrain(self, hex_field):
         """
@@ -603,7 +623,7 @@ class HexMap:
                 hex_field,
                 temp_terrain,
             )
-            temp_terrain.save()
+            temp_terrain.save_terrain_object()
 
 
 class EdgeMap:

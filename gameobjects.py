@@ -213,10 +213,8 @@ class Terrain(GameObject):
         ]
         return super().__str__() + ", " + ", ".join(attributes)
 
-    def save(self):
-        self.game_database.save_terrain_object(
-            self
-        )  # Using the singleton GameDatabase instance
+    def save_terrain_object(self):
+        self.game_database.save_terrain_object(self)
 
     @classmethod
     def load(cls, object_id):

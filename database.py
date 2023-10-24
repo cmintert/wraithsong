@@ -1,126 +1,65 @@
-from sqlalchemy import create_engine, declarative_base
-from sqlalchemy.orm import sessionmaker
-
-# Database setup
-DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(DATABASE_URL, echo=True)
-
-# Base class for models
-Base = declarative_base()
-
-# Session factory
-SessionLocal = sessionmaker(bind=engine)
+import sqlite3
 
 
-def init_db():
-    """Function to initialize the database and create tables"""
-    Base.metadata.create_all(bind=engine)
+class GameDatabase:
+    _instance = None
 
+    def __new__(cls, db_name="wraithsong_24_10_23"):
+        if cls._instance is None:
+            cls._instance = super(GameDatabase, cls).__new__(cls)
+            cls._instance.conn = sqlite3.connect(db_name)
+            cls._instance.create_tables()
+        return cls._instance
 
-class SaveGame(Base):
-    __tablename__ = "savegames"
-
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    game_name = Column(String(100))
-    game_data = Column(Text)
-
-    def __init__(self, game_name, game_data):
-        self.game_name = game_name
-        self.game_data = game_data
-
-    def __repr__(self):
-        return f"<SaveGame(id={self.id}, timestamp={self.timestamp}, game_name={self.game_name})>"
-
-
-class GameObject(Base):
-    __tablename__ = "gameobjects"
-
-    internal_id = Column(String, primary_key=True)
-    object_id = Column(String)
-    name = Column(String)
-    object_type = Column(String(50))
-
-    # Derived tables will populate this column to identify the subtype
-    type = Column(String(50))
-
-    __mapper_args__ = {"polymorphic_identity": "gameobject", "polymorphic_on": type}
-
-
-class Terrain(GameObject):
-    __tablename__ = "terrains"
-
-    internal_id = Column(
-        String, ForeignKey("gameobjects.internal_id"), primary_key=True
-    )
-    terrain_type = Column(String)
-    elevation = Column(Integer)
-
-    # Other dynamic attributes from the 'terrain.json' file can be added as needed.
-    # For instance, if you have an attribute called 'humidity' in the json file:
-    # humidity = Column(Integer)
-
-    __mapper_args__ = {
-        "polymorphic_identity": "terrain",
-    }
-
-
-class Structure(GameObject):
-    __tablename__ = "structures"
-
-    internal_id = Column(
-        String, ForeignKey("gameobjects.internal_id"), primary_key=True
-    )
-    structure_type = Column(String)
-
-    # Other dynamic attributes from the 'structure.json' file can be added as needed.
-    # For example:
-    # material = Column(String)
-
-    __mapper_args__ = {
-        "polymorphic_identity": "structure",
-    }
-
-
-class DbSession:
-    def __enter__(self):
-        self.session = SessionLocal()
-        return self.session
-
-    def __exit__(self, type, value, traceback):
-        self.session.close()
-
-
-class DbInteraction:
-    def __init__(self, session: Session):
-        self.db = session
-
-    def create_game_object(self, game_object: GameObject):
-        self.db.add(game_object)
-        self.db.commit()
-        self.db.refresh(game_object)
-        return game_object
-
-    def get_game_object(self, internal_id: str):
-        return (
-            self.db.query(GameObject)
-            .filter(GameObject.internal_id == internal_id)
-            .first()
+    def create_tables(self):
+        c = self.conn.cursor()
+        c.execute(
+            """
+        CREATE TABLE IF NOT EXISTS TerrainObjects (
+            object_id TEXT PRIMARY KEY,
+            internal_id TEXT,
+            name TEXT,
+            object_type TEXT,
+            terrain_type TEXT,
+            elevation INTEGER
         )
-
-    def get_game_objects(self, skip: int = 0, limit: int = 100):
-        return self.db.query(GameObject).offset(skip).limit(limit).all()
-
-    def update_game_object(self, game_object: GameObject):
-        self.db.merge(game_object)
-        self.db.commit()
-        return game_object
-
-    def delete_game_object(self, internal_id: str):
-        obj = (
-            self.db.query(GameObject)
-            .filter(GameObject.internal_id == internal_id)
-            .first()
+        """
         )
-        self.db.delete(obj)
-        self.db.commit()
+        self.conn.commit()
+
+    def save_terrain_object(self, terrain_object):
+        c = self.conn.cursor()
+        c.execute(
+            """
+        INSERT OR REPLACE INTO TerrainObjects (object_id, internal_id, name, object_type, terrain_type, elevation)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+            (
+                terrain_object.object_id,
+                terrain_object.internal_id,
+                terrain_object.name,
+                terrain_object.object_type,
+                terrain_object.terrain_type,
+                terrain_object.elevation,
+            ),
+        )
+        self.conn.commit()
+
+    def load_terrain_object(self, object_id, TerrainClass):
+        c = self.conn.cursor()
+        c.execute("SELECT * FROM TerrainObjects WHERE object_id = ?", (object_id,))
+        row = c.fetchone()
+
+        if row:
+            obj = TerrainClass()
+            (
+                obj.object_id,
+                obj.internal_id,
+                obj.name,
+                obj.object_type,
+                obj.terrain_type,
+                obj.elevation,
+            ) = row
+            return obj
+        else:
+            return None

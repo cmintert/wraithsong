@@ -1,6 +1,6 @@
 from typing import List, Tuple, Dict, Any
 
-from gameobjects import Terrain, Structure
+from gameobjects import Terrain, GameObject
 from map_logic import Hex, HexMap, EdgeMap
 
 
@@ -120,80 +120,83 @@ class MoveCalculator:
                 )
         return condition_list
 
-    def get_movement_cost(self, hex_field: Hex, direction: int) -> int:
-        """
-        Calculate the cumulative movement cost for moving in a specified direction
-        from a given hex field.
+    @classmethod
+    def check_for_condition(cls, game_object: GameObject, searched_condition: str) -> bool:
 
-        This method determines the movement cost considering the presence of Terrain
-        and Structure objects, with special consideration for bridges.
+        """Check if a specified condition is met by the game object's structure or terrain.
+
+        This method checks whether a specified condition is present in either the
+        `structure_condition` or `terrain_condition` attribute of the game object.
+        It's a class method, so it's bound to the class rather than a specific instance.
 
         Args:
-            hex_field (Hex): The starting hex field from which the movement cost is
-                             determined.
-            direction (int): The direction (0-5) in which the movement cost is
-                             being calculated.
+            game_object (GameObject): The game object to check.
+            searched_condition (str): The condition to check for.
 
         Returns:
-            int or float: The total movement cost for the specified direction from
-                          the given hex field.
+            bool: True if the condition is met, False otherwise.
 
-        Notes:
-            - The method first checks for the presence of a bridge in the direction
-              before calculating movement cost.
-            - If a bridge is present over "bridgeable" terrain, the movement cost
-              from that terrain is ignored.
-            - For `Structure` objects, if no bridge is present, the movement cost is
-              added to the cumulative cost if the sum is >= 1. Otherwise, the cumulative
-              cost is set to 1.
-
-        Example:
-            >>> hex_instance = HexFieldClass()
-            >>> cost = hex_instance.get_movement_cost(some_hex_field, 2)
-            >>> print(cost)
-            7
         """
+
+        if searched_condition in getattr(game_object, "structure_condition", []):
+            return True
+
+        if searched_condition in getattr(game_object, "terrain_condition", []):
+            return True
+
+        return False
+
+    def get_movement_cost(self, hex_field: Hex, direction: int) -> int:
+
+        """Calculate the movement cost to traverse a hex field in a specified direction.
+
+        This method sums up the movement costs associated with game objects found in
+        the specified hex field and direction. It takes into account whether a bridge
+        exists, which would significantly lower the movement cost. The minimum movement
+        cost is 1, regardless of other calculations.
+
+        Args:
+            hex_field (Hex): The hex field to evaluate.
+            direction (int): The direction of movement, represented as an integer from 0 to 5
+                             starting with 0 northeast on a point up hex.
+
+        Returns:
+            int: The total movement cost to traverse the hex field in the specified direction.
+
+        """
+
         hex_objects, edge_objects = self.neighbouring_hex_and_edge_objects(
             hex_field, direction
         )
         summed_movement_cost = 0
 
-        bridge = False
-
-        # Check for bridge
+        # check for bridge
+        for game_object in hex_objects + edge_objects:
+            bridge = self.check_for_condition(game_object, "bridge")
+            if bridge:
+                print(game_object, bridge)
+                break
 
         for game_object in hex_objects + edge_objects:
-            if isinstance(game_object, Structure):
-                if hasattr(game_object, "structure_condition"):
-                    if game_object.structure_condition == "bridge":
-                        bridge = True
 
-        for game_object in hex_objects + edge_objects:
-            if isinstance(game_object, Terrain):
-                # Set move cost to 0 if bridge is present
-                if hasattr(game_object, "terrain_condition"):
-                    if "bridgeable" in game_object.terrain_condition and bridge == True:
-                        bridge = False
-                        continue
+            temp_move_cost = getattr(game_object, "movement_cost", 10000)
 
-                summed_movement_cost += getattr(game_object, "movement_cost", 10000)
+            # if object is bridgeable and there is a bridge, movement cost is 0
 
-            # Recalculate movement cost if structure is present
+            if self.check_for_condition(game_object, "bridgeable"):
+                temp_move_cost = 0
 
-        if (
-            isinstance(game_object, Structure)
-            and summed_movement_cost + getattr(game_object, "movement_cost", 10000) >= 1
-            and bridge == False
-        ):
-            potential_new_cost = summed_movement_cost + getattr(
-                game_object, "movement_cost", 10000
-            )
-            if potential_new_cost >= 1:
-                summed_movement_cost += getattr(game_object, "movement_cost", 10000)
-            else:
-                summed_movement_cost = 1  # Movement cost can't be less than 1
+            summed_movement_cost += temp_move_cost
+
+        # movement can not be lower than 1
+
+        if summed_movement_cost < 1:
+            summed_movement_cost = 1
 
         return summed_movement_cost
+
+
+
 
     def get_movement_conditions(self, hex_field: Hex, direction: int) -> List[str]:
         """
@@ -400,12 +403,6 @@ class Graph:
                              - collect_neighbours_for_all()
                              - collect_all_nodes()
 
-        Attributes:
-            edges (list): A list of move paths collected from the move calculator.
-            neighbours (dict): A dictionary with nodes as keys and their neighbours
-                               as values, collected from the move calculator.
-            nodes (list): A list of all nodes collected from the move calculator.
-
         Notes:
             - The initialization process also prints "Initializing graph" for
               debugging or informational purposes.
@@ -419,9 +416,11 @@ class Graph:
         self.edges: List[
             Tuple[Hex, int, Hex, int, List[str]]
         ] = move_calculator.collect_move_paths()
+
         self.neighbours: Dict[
             Any, List[Any]
         ] = move_calculator.collect_neighbours_for_all()
+
         self.nodes: List[Any] = move_calculator.collect_all_nodes()
 
     def get_movement_cost(self, node1: Hex, node2: Hex) -> int:

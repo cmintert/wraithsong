@@ -2,6 +2,8 @@ import json
 import random
 import uuid
 
+from database import GameDatabase
+
 
 class ObjectIDGenerator:
     """Manages the generation of unique object IDs.
@@ -79,6 +81,7 @@ class GameObject:
         self.internal_id = str(uuid.uuid4())
         self.name = name
         self.object_type = object_type
+        self.game_database = GameDatabase()
 
     def __str__(self):
         """
@@ -209,6 +212,16 @@ class Terrain(GameObject):
             if key not in ["internal_id", "name", "object_type"]
         ]
         return super().__str__() + ", " + ", ".join(attributes)
+
+    def save(self):
+        self.game_database.save_terrain_object(
+            self
+        )  # Using the singleton GameDatabase instance
+
+    @classmethod
+    def load(cls, object_id):
+        game_database = GameDatabase()  # Instantiating the singleton GameDatabase
+        return game_database.load_terrain_object(object_id, cls)
 
 
 class Army(GameObject):

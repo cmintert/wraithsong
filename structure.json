@@ -5,14 +5,14 @@
       "movement_cost": -2,
       "build_cost": 200,
       "edgeobject": "True",
-      "structure_condition": "road"
+      "structure_condition": ["road"]
     },
     "bridge": {
       "texture": "bridge.png",
       "movement_cost": 0,
       "build_cost": 200,
       "edgeobject": "True",
-      "structure_condition": "bridge"
+      "structure_condition": ["bridge"]
     }
   }
 }

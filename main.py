@@ -18,6 +18,7 @@ class Game:
 
     Attributes:
         name (str): The name of the game.
+        game_database (GameDatabase): An instance of the GameDatabase class for saving and loading game data.
         hexmap (HexMap): An instance of the HexMap class representing the game's hexagonal map.
         edgemap (EdgeMap): An instance of the EdgeMap class representing the edges of the hex map.
         players (list): A list of players participating in the game.

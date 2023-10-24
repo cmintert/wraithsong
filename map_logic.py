@@ -596,10 +596,14 @@ class HexMap:
 
         for hex_field in self.hex_map.keys():
             choice = random.choice(terrain_types)
+            temp_terrain = Terrain(
+                game.object_id_generator, "Generated_Terrain", choice
+            )
             self.append_object_to_hex(
                 hex_field,
-                Terrain(game.object_id_generator, "Generated_Terrain", choice),
+                temp_terrain,
             )
+            temp_terrain.save()
 
 
 class EdgeMap:

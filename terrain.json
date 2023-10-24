@@ -2,12 +2,12 @@
   "terrain": {
     "forest": {
       "texture": "forest.png",
-      "movement_cost": 2,
+      "movement_cost": 3,
       "visibility": 2
     },
     "plain": {
       "texture": "plain.png",
-      "movement_cost": 1,
+      "movement_cost": 2,
       "visibility": 5
     },
     "mountain": {
@@ -19,20 +19,20 @@
       "texture": "water.png",
       "movement_cost": 1,
       "visibility": 0,
-      "terrain_condition": "swimming"
+      "terrain_condition": ["swimming"]
     },
     "river": {
       "texture": "river.png",
       "movement_cost": 3,
       "visibility": 6,
       "edgeobject": "True",
-      "terrain_condition": "river, break_10, bridgeable"
+      "terrain_condition": ["bridgeable", "river"]
     },
     "volcano": {
       "texture": "volcano.png",
       "movement_cost": 5,
       "visibility": 1,
-      "terrain_condition": "break_30"
+      "terrain_condition": ["break_30"]
     }    
   },
   "conditions": {

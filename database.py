@@ -48,6 +48,17 @@ class GameDatabase:
 
         connection.execute(
             """
+        CREATE TABLE IF NOT EXISTS Edges (
+            object_id TEXT PRIMARY KEY,
+            hex_field_1_object_id TEXT,
+            hex_field_2_object_id TEXT,
+            spawn_direction INTEGER
+        )
+        """
+        )
+
+        connection.execute(
+            """
         CREATE TABLE IF NOT EXISTS HexMap_size (
             left INTEGER,
             right INTEGER,
@@ -61,6 +72,15 @@ class GameDatabase:
             """
         CREATE TABLE IF NOT EXISTS HexMap_objects (
             hex_object_id TEXT,
+            game_object_id TEXT UNIQUE
+        )
+        """
+        )
+
+        connection.execute(
+            """
+        CREATE TABLE IF NOT EXISTS EdgeMap_objects (
+            edge_object_id TEXT,
             game_object_id TEXT UNIQUE
         )
         """
@@ -130,10 +150,17 @@ class GameDatabase:
         self.conn.commit()
 
     def save_hex_objects(self, hexmap, hex_field):
+        """
+        Save hex objects to the game database.
+
+        Args:
+            hexmap: The hex map object that contains the hex objects.
+            hex_field: The hex field to save the objects for.
+
+        """
         connection = self.conn.cursor()
 
         object_list = hexmap.get_hex_object_list(hex_field)
-        print("Milestone 1")
         for game_object in object_list:
             connection.execute(
                 """
@@ -146,3 +173,35 @@ class GameDatabase:
                 ),
             )
             self.conn.commit()
+
+    def save_edge_objects(self, edgemap, edge):
+        connection = self.conn.cursor()
+        edge_object_list = edgemap.get_edge_object_list(edge)
+        for game_object in edge_object_list:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO EdgeMap_objects (edge_object_id, game_object_id)
+              VALUES (?, ?)
+                """,
+                (
+                    edge.object_id,
+                    game_object.object_id,
+                ),
+            )
+            self.conn.commit()
+
+    def save_edge_object(self, edge_obj):
+        connection = self.conn.cursor()
+        connection.execute(
+            """
+        INSERT OR REPLACE INTO Edges (object_id, hex_field_1_object_id, hex_field_2_object_id, spawn_direction)
+        VALUES (?, ?, ?, ?)
+        """,
+            (
+                edge_obj.object_id,
+                edge_obj.hex_field_1.object_id,
+                edge_obj.hex_field_2.object_id,
+                edge_obj.spawn_direction,
+            ),
+        )
+        self.conn.commit()

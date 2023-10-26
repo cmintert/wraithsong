@@ -6,22 +6,13 @@ from database import GameDatabase
 
 
 class ObjectIDGenerator:
-    """Manages the generation of unique object IDs.
+    _instance = None
 
-    This class provides functionality to generate unique IDs based on a combination of
-    an object type, a name, and a random counter. The uniqueness of IDs is ensured within
-    the context of a single instance of the `ObjectIDGenerator` class.
-
-    Attributes:
-        used_counters (set): A set of counters that have been used to generate unique IDs.
-
-    Methods:
-        get_random_counter: Generates a random 4-digit counter.
-        get_unique_id: Generates a unique ID based on the provided name and object type.
-    """
-
-    def __init__(self):
-        self.used_counters = set()
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ObjectIDGenerator, cls).__new__(cls)
+            cls._instance.used_counters = set()
+        return cls._instance
 
     @staticmethod
     def get_random_counter():

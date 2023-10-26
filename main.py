@@ -32,7 +32,7 @@ class Game:
 
     def __init__(self, name):
         self.name = name
-        self.game_database = GameDatabase(name)
+        self.game_database = GameDatabase()
         self.hexmap = HexMap(-8, 8, -8, 8)
         self.edgemap = EdgeMap()
         self.object_id_generator = ObjectIDGenerator()
@@ -63,7 +63,7 @@ edgemap.append_object_to_edge(
     Structure(game.object_id_generator, "Monster road", "road"),
 )
 
-edgemap.append_chain_of_object_to_edges(
+edgemap.append_chain_of_objects_to_edges(
     Hex.hex_obj_from_string("0,0"),
     [0, 2, 1, 1, 3, 2, 1],
     Structure(game.object_id_generator, "Silk road", "road"),

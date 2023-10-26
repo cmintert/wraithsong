@@ -5,7 +5,7 @@ import re
 from typing import Type
 
 from database import GameDatabase
-from gameobjects import Terrain
+from gameobjects import ObjectIDGenerator, Terrain
 
 
 class Hex:
@@ -359,6 +359,8 @@ class Edge:
         self.hex_field_1, self.hex_field_2 = Hex.ordered_hex_pair(
             hex_field_1, hex_field_2
         )
+        self.object_id = f"{self.hex_field_1.object_id},{self.hex_field_2.object_id}"
+        self.game_database = GameDatabase()
 
     def __hash__(self):
         """
@@ -403,6 +405,9 @@ class Edge:
         """
         return self.hex_field_1, self.hex_field_2
 
+    def save_edge_object(self):
+        self.game_database.save_edge_object(self)
+
 
 class HexMap:
     """
@@ -416,8 +421,9 @@ class HexMap:
         """
         Initializes an empty hexagonal map.
         """
-        self.hex_map = {}
         self.game_database = GameDatabase()
+        self.object_id_generator = ObjectIDGenerator()
+        self.hex_map = {}
 
         self.left = left
         self.right = right
@@ -650,6 +656,8 @@ class EdgeMap:
         """
         Initializes an empty edge map.
         """
+        self.game_database = GameDatabase()
+        self.object_id_generator = ObjectIDGenerator()
         self.edge_map = {}
 
     def initialize_edge_map(self, hex_map):
@@ -662,13 +670,10 @@ class EdgeMap:
         for hex_field in hex_map.keys():
             for direction in range(6):
                 neighbour_hex = Hex.get_neighbour_hex(hex_field, direction)
-                if (
-                    Edge(hex_field, neighbour_hex, direction)
-                    not in self.edge_map.keys()
-                ):
-                    self.edge_map.update(
-                        {Edge(hex_field, neighbour_hex, direction): []}
-                    )
+                temp_edge = Edge(hex_field, neighbour_hex, direction)
+                if temp_edge not in self.edge_map.keys():
+                    self.edge_map.update({temp_edge: []})
+                    temp_edge.save_edge_object()
 
     def append_object_to_edge(self, edge, game_object):
         """
@@ -688,8 +693,9 @@ class EdgeMap:
             self.edge_map[edge].append(game_object)
         else:
             self.edge_map[edge] = [game_object]
+        self.game_database.save_edge_objects(self, edge)
 
-    def append_chain_of_object_to_edges(
+    def append_chain_of_objects_to_edges(
         self, source_hex_field, direction_list, game_object
     ):
         """
@@ -716,10 +722,22 @@ class EdgeMap:
             >>> directions = [0, 2, 4]
             >>> hex_instance.append_chain_of_object_to_edges(start_hex, directions, game_obj)
         """
+        sub_object = game_object
+        name = game_object.name
+        structure_type = game_object.terrain_type
+        counter = 1
+
         for direction in direction_list:
             edge = Hex.get_edge_by_direction(source_hex_field, direction)
-            self.append_object_to_edge(edge, game_object)
             source_hex_field = Hex.get_neighbour_hex(source_hex_field, direction)
+            # create a new object with the same name and structure type, just different id
+            # this is needed to save the object to the database
+            sub_object = type(game_object)(
+                self.object_id_generator, name + str(counter), structure_type
+            )
+            self.append_object_to_edge(edge, sub_object)
+            counter += 1
+        del sub_object
 
     def get_edge_object_list(self, edge):
         """

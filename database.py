@@ -3,6 +3,21 @@ from datetime import datetime
 
 
 def generate_db_name(prefix="wraithsong"):
+    """
+    Generate a database name.
+
+    Args:
+        prefix (str): The prefix to use in the database name. Default is "wraithsong".
+
+    Returns:
+        str: The generated database name.
+
+    Example:
+        >>> generate_db_name()
+        'wraithsong_16_04_2022_09_30_dev'
+        >>> generate_db_name("mydb")
+        'mydb_16_04_2022_09_30_dev'
+    """
     current_time = datetime.now().strftime("%d_%m_%Y_%H_%M_dev")
     return f"{prefix}_{current_time}"
 
@@ -38,6 +53,15 @@ class GameDatabase:
             right INTEGER,
             top INTEGER,
             bottom INTEGER
+        )
+        """
+        )
+
+        connection.execute(
+            """
+        CREATE TABLE IF NOT EXISTS HexMap_objects (
+            hex_object_id TEXT,
+            game_object_id TEXT UNIQUE
         )
         """
         )
@@ -105,23 +129,20 @@ class GameDatabase:
         )
         self.conn.commit()
 
-    def load_terrain_object(self, object_id, terrain_class):
+    def save_hex_objects(self, hexmap, hex_field):
         connection = self.conn.cursor()
-        connection.execute(
-            "SELECT * FROM TerrainObjects WHERE object_id = ?", (object_id,)
-        )
-        row = connection.fetchone()
 
-        if row:
-            obj = terrain_class()
-            (
-                obj.object_id,
-                obj.internal_id,
-                obj.name,
-                obj.object_type,
-                obj.terrain_type,
-                obj.elevation,
-            ) = row
-            return obj
-        else:
-            return None
+        object_list = hexmap.get_hex_object_list(hex_field)
+        print("Milestone 1")
+        for game_object in object_list:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO HexMap_objects (hex_object_id, game_object_id)
+                VALUES (?, ?)
+                """,
+                (
+                    hex_field.object_id,
+                    game_object.object_id,
+                ),
+            )
+            self.conn.commit()

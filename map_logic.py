@@ -625,6 +625,10 @@ class HexMap:
             )
             temp_terrain.save_terrain_object()
 
+        # save all hex objects to database
+        for hex_field in self.hex_map.keys():
+            self.game_database.save_hex_objects(self, hex_field)
+
 
 class EdgeMap:
     """

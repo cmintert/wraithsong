@@ -2,6 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from database import GameDatabase
 from gameobjects import ObjectIDGenerator, Structure, Terrain
 from map_logic import HexMap, EdgeMap, Hex
 from move_logic import MoveCalculator, Graph
@@ -31,6 +32,7 @@ class Game:
 
     def __init__(self, name):
         self.name = name
+        self.game_database = GameDatabase(name)
         self.hexmap = HexMap(-8, 8, -8, 8)
         self.edgemap = EdgeMap()
         self.object_id_generator = ObjectIDGenerator()
